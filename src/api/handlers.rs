@@ -129,3 +129,100 @@ pub async fn get_supported_languages() -> ApiResult<HttpResponse> {
 
     Ok(HttpResponse::Ok().json(response))
 }
+
+#[post("/wallet/generate")]
+pub async fn generate_wallet(
+    wallet_service: web::Data<Arc<WalletService>>,
+    req: web::Json<GenerateWalletRequest>,
+) -> ApiResult<HttpResponse> {
+    info!(
+        "Generating {} wallet at index {}",
+        match req.address_type {
+            AddressType::BitcoinTaproot => "Bitcoin Taproot",
+            AddressType::BitcoinSegwit => "Bitcoin SegWit",
+            AddressType::BitcoinLegacy => "Bitcoin Legacy",
+            AddressType::Ethereum => "Ethereum",
+        },
+        req.index
+    );
+
+    let wallet = wallet_service
+        .generate_wallet_address(
+            &req.mnemonic,
+            &req.passphrase,
+            &req.address_type,
+            req.index,
+        )
+        .await?;
+
+    let response = GenerateWalletResponse {
+        address: wallet.address,
+        address_type: wallet.address_type,
+        derivation_path: wallet.derivation_path,
+        index: wallet.index,
+        public_key: wallet.public_key,
+        private_key: wallet.private_key,
+    };
+
+    Ok(HttpResponse::Ok().json(response))
+}
+
+#[post("/wallet/batch")]
+pub async fn batch_generate_wallets(
+    wallet_service: web::Data<Arc<WalletService>>,
+    req: web::Json<BatchGenerateWalletRequest>,
+) -> ApiResult<HttpResponse> {
+    // Validate count
+    if req.count == 0 || req.count > 100 {
+        return Err(ApiError::BadRequest(
+            "Count must be between 1 and 100".to_string(),
+        ));
+    }
+
+    if req.address_types.is_empty() {
+        return Err(ApiError::BadRequest(
+            "At least one address type must be specified".to_string(),
+        ));
+    }
+
+    info!(
+        "Batch generating {} addresses for {} types starting at index {}",
+        req.count,
+        req.address_types.len(),
+        req.start_index
+    );
+
+    let addresses = wallet_service
+        .batch_generate_wallet_addresses(
+            &req.mnemonic,
+            &req.passphrase,
+            &req.address_types,
+            req.start_index,
+            req.count,
+        )
+        .await?;
+
+    let response = BatchGenerateWalletResponse { addresses };
+
+    Ok(HttpResponse::Ok().json(response))
+}
+
+#[get("/wallet/types")]
+pub async fn get_supported_wallet_types() -> ApiResult<HttpResponse> {
+    let types = vec![
+        "bitcoin_taproot",
+        "bitcoin_segwit",
+        "bitcoin_legacy",
+        "ethereum",
+    ];
+
+    Ok(HttpResponse::Ok().json(serde_json::json!({
+        "supported_types": types,
+        "description": {
+            "bitcoin_taproot": "Bitcoin Taproot addresses (bc1p...)",
+            "bitcoin_segwit": "Bitcoin SegWit addresses (bc1q...)",
+            "bitcoin_legacy": "Bitcoin Legacy addresses (1...)",
+            "ethereum": "Ethereum addresses (0x...)"
+        }
+    })))
+}

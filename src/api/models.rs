@@ -66,3 +66,65 @@ pub struct HealthResponse {
     pub version: String,
     pub timestamp: i64,
 }
+
+// New wallet generation models
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GenerateWalletRequest {
+    pub mnemonic: String,
+    #[serde(default)]
+    pub passphrase: String,
+    #[serde(default)]
+    pub index: u32,
+    pub address_type: AddressType,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum AddressType {
+    BitcoinTaproot,
+    BitcoinSegwit,
+    BitcoinLegacy,
+    Ethereum,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GenerateWalletResponse {
+    pub address: String,
+    pub address_type: AddressType,
+    pub derivation_path: String,
+    pub index: u32,
+    pub public_key: String,
+    pub private_key: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BatchGenerateWalletRequest {
+    pub mnemonic: String,
+    #[serde(default)]
+    pub passphrase: String,
+    #[serde(default)]
+    pub start_index: u32,
+    #[serde(default = "default_count")]
+    pub count: u32,
+    pub address_types: Vec<AddressType>,
+}
+
+fn default_count() -> u32 {
+    10
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BatchGenerateWalletResponse {
+    pub addresses: Vec<WalletAddress>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WalletAddress {
+    pub address: String,
+    pub address_type: AddressType,
+    pub derivation_path: String,
+    pub index: u32,
+    pub public_key: String,
+    pub private_key: String,
+}

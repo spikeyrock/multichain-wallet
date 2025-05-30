@@ -58,6 +58,9 @@ async fn main() -> std::io::Result<()> {
                     .service(handlers::generate_mnemonic)
                     .service(handlers::validate_mnemonic)
                     .service(handlers::get_supported_languages)
+                    .service(handlers::generate_wallet)
+                    .service(handlers::batch_generate_wallets)
+                    .service(handlers::get_supported_wallet_types)
             )
     })
     .bind(&bind_address)?
