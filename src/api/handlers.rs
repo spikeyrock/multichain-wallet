@@ -142,6 +142,14 @@ pub async fn generate_wallet(
             AddressType::BitcoinSegwit => "Bitcoin SegWit",
             AddressType::BitcoinLegacy => "Bitcoin Legacy",
             AddressType::Ethereum => "Ethereum",
+            AddressType::Xrp => "XRP",
+            AddressType::Solana => "Solana",
+            AddressType::Tron => "Tron",
+            AddressType::Cardano => "Cardano",
+            AddressType::Sui => "Sui",
+            AddressType::Stellar => "Stellar",
+            AddressType::Monero => "Monero",
+            AddressType::Near => "NEAR",
         },
         req.index
     );
@@ -214,6 +222,14 @@ pub async fn get_supported_wallet_types() -> ApiResult<HttpResponse> {
         "bitcoin_segwit",
         "bitcoin_legacy",
         "ethereum",
+        "xrp",
+        "solana",
+        "tron",
+        "cardano",
+        "sui",
+        "stellar",
+        "monero",
+        "near",
     ];
 
     Ok(HttpResponse::Ok().json(serde_json::json!({
@@ -222,7 +238,15 @@ pub async fn get_supported_wallet_types() -> ApiResult<HttpResponse> {
             "bitcoin_taproot": "Bitcoin Taproot addresses (bc1p...)",
             "bitcoin_segwit": "Bitcoin SegWit addresses (bc1q...)",
             "bitcoin_legacy": "Bitcoin Legacy addresses (1...)",
-            "ethereum": "Ethereum addresses (0x...)"
+            "ethereum": "Ethereum addresses (0x...)",
+            "xrp": "XRP addresses (r...)",
+            "solana": "Solana addresses (base58)",
+            "tron": "Tron addresses (T...)",
+            "cardano": "Cardano addresses (addr1...)",
+            "sui": "Sui addresses (0x...)",
+            "stellar": "Stellar addresses (G...)",
+            "monero": "Monero addresses (4...)",
+            "near": "NEAR addresses (implicit)"
         }
     })))
 }

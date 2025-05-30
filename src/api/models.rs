@@ -86,6 +86,14 @@ pub enum AddressType {
     BitcoinSegwit,
     BitcoinLegacy,
     Ethereum,
+    Xrp,
+    Solana,
+    Tron,
+    Cardano,
+    Sui,
+    Stellar,
+    Monero,
+    Near,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
