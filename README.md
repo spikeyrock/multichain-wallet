@@ -307,4 +307,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ by the crypto community, for the crypto community.
+Made with ❤️ for the crypto community.
