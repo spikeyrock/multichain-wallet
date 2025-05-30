@@ -6,7 +6,9 @@ use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
 mod api;
+mod chains;
 mod config;
+mod core;
 mod errors;
 mod services;
 
@@ -30,10 +32,11 @@ async fn main() -> std::io::Result<()> {
     let config = Config::from_env().expect("Failed to load configuration");
     let bind_address = format!("{}:{}", config.host, config.port);
 
-    info!("Starting Crypto Wallet API on {}", bind_address);
+    info!("Starting Multi-Chain Crypto Wallet API on {}", bind_address);
+    info!("Supported chains: Bitcoin (BTC), Ethereum (ETH), Ripple (XRP), Solana (SOL), TRON (TRX), Cardano (ADA), Sui (SUI), Stellar (XLM), Monero (XMR), NEAR Protocol (NEAR)");
 
     // Create shared services
-    let wallet_service = Arc::new(WalletService::new());
+    let wallet_service = Arc::new(tokio::sync::Mutex::new(WalletService::new()));
 
     // Start HTTP server
     HttpServer::new(move || {

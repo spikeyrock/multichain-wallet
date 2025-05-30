@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use crate::core::ChainType;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GenerateMnemonicRequest {
@@ -67,8 +68,6 @@ pub struct HealthResponse {
     pub timestamp: i64,
 }
 
-// New wallet generation models
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GenerateWalletRequest {
     pub mnemonic: String,
@@ -96,9 +95,51 @@ pub enum AddressType {
     Near,
 }
 
+// Convert from AddressType to ChainType
+impl From<AddressType> for ChainType {
+    fn from(address_type: AddressType) -> Self {
+        match address_type {
+            AddressType::BitcoinTaproot => ChainType::BitcoinTaproot,
+            AddressType::BitcoinSegwit => ChainType::BitcoinSegwit,
+            AddressType::BitcoinLegacy => ChainType::BitcoinLegacy,
+            AddressType::Ethereum => ChainType::Ethereum,
+            AddressType::Xrp => ChainType::Ripple,
+            AddressType::Solana => ChainType::Solana,
+            AddressType::Tron => ChainType::Tron,
+            AddressType::Cardano => ChainType::Cardano,
+            AddressType::Sui => ChainType::Sui,
+            AddressType::Stellar => ChainType::Stellar,
+            AddressType::Monero => ChainType::Monero,
+            AddressType::Near => ChainType::Near,
+        }
+    }
+}
+
+// Convert from ChainType to AddressType
+impl From<ChainType> for AddressType {
+    fn from(chain_type: ChainType) -> Self {
+        match chain_type {
+            ChainType::BitcoinTaproot => AddressType::BitcoinTaproot,
+            ChainType::BitcoinSegwit => AddressType::BitcoinSegwit,
+            ChainType::BitcoinLegacy => AddressType::BitcoinLegacy,
+            ChainType::Ethereum => AddressType::Ethereum,
+            ChainType::Ripple => AddressType::Xrp,
+            ChainType::Solana => AddressType::Solana,
+            ChainType::Tron => AddressType::Tron,
+            ChainType::Cardano => AddressType::Cardano,
+            ChainType::Sui => AddressType::Sui,
+            ChainType::Stellar => AddressType::Stellar,
+            ChainType::Monero => AddressType::Monero,
+            ChainType::Near => AddressType::Near,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GenerateWalletResponse {
     pub address: String,
+    pub chain_name: String,
+    pub chain_symbol: String,
     pub address_type: AddressType,
     pub derivation_path: String,
     pub index: u32,
@@ -124,9 +165,22 @@ fn default_count() -> u32 {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BatchGenerateWalletResponse {
-    pub addresses: Vec<WalletAddress>,
+    pub addresses: Vec<WalletAddressResponse>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WalletAddressResponse {
+    pub address: String,
+    pub chain_name: String,
+    pub chain_symbol: String,
+    pub address_type: AddressType,
+    pub derivation_path: String,
+    pub index: u32,
+    pub public_key: String,
+    pub private_key: String,
+}
+
+// Backward compatibility
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WalletAddress {
     pub address: String,

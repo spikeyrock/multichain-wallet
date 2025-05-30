@@ -1,8 +1,10 @@
 use actix_web::{get, post, web, HttpResponse};
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::api::models::*;
+use crate::core::{ChainType, get_chain_info};
 use crate::errors::{ApiError, ApiResult};
 use crate::services::wallet::WalletService;
 
@@ -19,7 +21,7 @@ pub async fn health_check() -> ApiResult<HttpResponse> {
 
 #[post("/mnemonic/generate")]
 pub async fn generate_mnemonic(
-    wallet_service: web::Data<Arc<WalletService>>,
+    wallet_service: web::Data<Arc<Mutex<WalletService>>>,
     req: web::Json<GenerateMnemonicRequest>,
 ) -> ApiResult<HttpResponse> {
     // Validate request
@@ -32,7 +34,8 @@ pub async fn generate_mnemonic(
     );
 
     // Generate mnemonic
-    let mnemonic = wallet_service
+    let service = wallet_service.lock().await;
+    let mnemonic = service
         .generate_mnemonic(&req.language, req.word_count)
         .await?;
 
@@ -48,12 +51,13 @@ pub async fn generate_mnemonic(
 
 #[post("/mnemonic/validate")]
 pub async fn validate_mnemonic(
-    wallet_service: web::Data<Arc<WalletService>>,
+    wallet_service: web::Data<Arc<Mutex<WalletService>>>,
     req: web::Json<ValidateMnemonicRequest>,
 ) -> ApiResult<HttpResponse> {
     info!("Validating mnemonic in {}", req.language);
 
-    let (valid, word_count) = wallet_service
+    let service = wallet_service.lock().await;
+    let (valid, word_count) = service
         .validate_mnemonic(&req.mnemonic, &req.language)
         .await;
 
@@ -132,40 +136,32 @@ pub async fn get_supported_languages() -> ApiResult<HttpResponse> {
 
 #[post("/wallet/generate")]
 pub async fn generate_wallet(
-    wallet_service: web::Data<Arc<WalletService>>,
+    wallet_service: web::Data<Arc<Mutex<WalletService>>>,
     req: web::Json<GenerateWalletRequest>,
 ) -> ApiResult<HttpResponse> {
+    let chain_type: ChainType = req.address_type.clone().into();
+    let chain_info = get_chain_info(&chain_type);
+    
     info!(
-        "Generating {} wallet at index {}",
-        match req.address_type {
-            AddressType::BitcoinTaproot => "Bitcoin Taproot",
-            AddressType::BitcoinSegwit => "Bitcoin SegWit",
-            AddressType::BitcoinLegacy => "Bitcoin Legacy",
-            AddressType::Ethereum => "Ethereum",
-            AddressType::Xrp => "XRP",
-            AddressType::Solana => "Solana",
-            AddressType::Tron => "Tron",
-            AddressType::Cardano => "Cardano",
-            AddressType::Sui => "Sui",
-            AddressType::Stellar => "Stellar",
-            AddressType::Monero => "Monero",
-            AddressType::Near => "NEAR",
-        },
-        req.index
+        "Generating {} ({}) wallet at index {}",
+        chain_info.name, chain_info.symbol, req.index
     );
 
-    let wallet = wallet_service
+    let mut service = wallet_service.lock().await;
+    let wallet = service
         .generate_wallet_address(
             &req.mnemonic,
             &req.passphrase,
-            &req.address_type,
+            &chain_type,
             req.index,
         )
         .await?;
 
     let response = GenerateWalletResponse {
         address: wallet.address,
-        address_type: wallet.address_type,
+        chain_name: wallet.chain_info.name,
+        chain_symbol: wallet.chain_info.symbol,
+        address_type: req.address_type.clone(),
         derivation_path: wallet.derivation_path,
         index: wallet.index,
         public_key: wallet.public_key,
@@ -177,7 +173,7 @@ pub async fn generate_wallet(
 
 #[post("/wallet/batch")]
 pub async fn batch_generate_wallets(
-    wallet_service: web::Data<Arc<WalletService>>,
+    wallet_service: web::Data<Arc<Mutex<WalletService>>>,
     req: web::Json<BatchGenerateWalletRequest>,
 ) -> ApiResult<HttpResponse> {
     // Validate count
@@ -200,53 +196,86 @@ pub async fn batch_generate_wallets(
         req.start_index
     );
 
-    let addresses = wallet_service
+    let chain_types: Vec<ChainType> = req.address_types
+        .iter()
+        .map(|at| at.clone().into())
+        .collect();
+
+    let mut service = wallet_service.lock().await;
+    let addresses = service
         .batch_generate_wallet_addresses(
             &req.mnemonic,
             &req.passphrase,
-            &req.address_types,
+            &chain_types,
             req.start_index,
             req.count,
         )
         .await?;
 
-    let response = BatchGenerateWalletResponse { addresses };
+    let response_addresses: Vec<WalletAddressResponse> = addresses
+        .into_iter()
+        .map(|wallet| WalletAddressResponse {
+            address: wallet.address,
+            chain_name: wallet.chain_info.name,
+            chain_symbol: wallet.chain_info.symbol,
+            address_type: wallet.chain_type.into(),
+            derivation_path: wallet.derivation_path,
+            index: wallet.index,
+            public_key: wallet.public_key,
+            private_key: wallet.private_key,
+        })
+        .collect();
+
+    let response = BatchGenerateWalletResponse {
+        addresses: response_addresses,
+    };
 
     Ok(HttpResponse::Ok().json(response))
 }
 
 #[get("/wallet/types")]
-pub async fn get_supported_wallet_types() -> ApiResult<HttpResponse> {
-    let types = vec![
-        "bitcoin_taproot",
-        "bitcoin_segwit",
-        "bitcoin_legacy",
-        "ethereum",
-        "xrp",
-        "solana",
-        "tron",
-        "cardano",
-        "sui",
-        "stellar",
-        "monero",
-        "near",
-    ];
+pub async fn get_supported_wallet_types(
+    wallet_service: web::Data<Arc<Mutex<WalletService>>>,
+) -> ApiResult<HttpResponse> {
+    let service = wallet_service.lock().await;
+    let chains = service.list_supported_chains().await;
+    
+    let chain_details: Vec<serde_json::Value> = chains
+        .into_iter()
+        .map(|chain| {
+            let chain_type = match chain.name.as_str() {
+                "Bitcoin" => {
+                    // Determine Bitcoin variant based on address format
+                    match &chain.address_format {
+                        crate::core::AddressFormat::Bech32 { hrp } if hrp == "bc" => "bitcoin_segwit",
+                        crate::core::AddressFormat::Bitcoin { .. } => "bitcoin_legacy",
+                        _ => "bitcoin_taproot",
+                    }
+                },
+                "Ethereum" => "ethereum",
+                "Ripple" => "xrp",
+                "Solana" => "solana",
+                "TRON" => "tron",
+                "Cardano" => "cardano",
+                "Sui" => "sui",
+                "Stellar" => "stellar",
+                "Monero" => "monero",
+                "NEAR Protocol" => "near",
+                _ => "unknown"
+            };
+            
+            serde_json::json!({
+                "type": chain_type,
+                "name": chain.name,
+                "symbol": chain.symbol,
+                "decimals": chain.decimals,
+                "description": format!("{} ({}) - {} decimals", chain.name, chain.symbol, chain.decimals)
+            })
+        })
+        .collect();
 
     Ok(HttpResponse::Ok().json(serde_json::json!({
-        "supported_types": types,
-        "description": {
-            "bitcoin_taproot": "Bitcoin Taproot addresses (bc1p...)",
-            "bitcoin_segwit": "Bitcoin SegWit addresses (bc1q...)",
-            "bitcoin_legacy": "Bitcoin Legacy addresses (1...)",
-            "ethereum": "Ethereum addresses (0x...)",
-            "xrp": "XRP addresses (r...)",
-            "solana": "Solana addresses (base58)",
-            "tron": "Tron addresses (T...)",
-            "cardano": "Cardano addresses (addr1...)",
-            "sui": "Sui addresses (0x...)",
-            "stellar": "Stellar addresses (G...)",
-            "monero": "Monero addresses (4...)",
-            "near": "NEAR addresses (implicit)"
-        }
+        "supported_chains": chain_details,
+        "total_chains": chain_details.len()
     })))
 }
