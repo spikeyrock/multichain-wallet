@@ -1,0 +1,42 @@
+[package]
+name = "crypto-wallet-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Web framework
+actix-web = "4.4"
+actix-cors = "0.7"
+
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Crypto libraries
+bip39 = { version = "2.0", features = ["japanese", "korean", "spanish", "chinese-simplified", "chinese-traditional", "french", "italian", "czech", "portuguese"] }
+
+# Security
+rand = "0.8"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-actix-web = "0.7"
+
+# Configuration
+dotenv = "0.15"
+config = "0.13"
+
+# Time
+chrono = "0.4"
+
+[dev-dependencies]
+actix-rt = "2.9"
+reqwest = { version = "0.11", features = ["json"] }
