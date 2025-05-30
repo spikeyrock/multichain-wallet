@@ -37,6 +37,21 @@ pub enum ChainType {
     Ton,
     Dogecoin,
     Polkadot,
+    Cosmos,
+    Osmosis,
+    Juno,
+    Secret,
+    Akash,
+    Sei,
+    Celestia,
+    Injective,
+    Tezos,
+    Algorand,
+    Eos,
+    Hedera,
+    Filecoin,
+    Mina,
+    InternetComputer,
 }
 
 impl fmt::Display for ChainType {
@@ -164,6 +179,127 @@ pub fn get_chain_info(chain_type: &ChainType) -> ChainInfo {
             decimals: 10,
             address_format: AddressFormat::Custom("1".to_string()),
         },
+        ChainType::Cosmos => ChainInfo {
+            name: "Cosmos".to_string(),
+            symbol: "ATOM".to_string(),
+            coin_type: 118,
+            decimals: 6,
+            address_format: AddressFormat::Bech32 { 
+                hrp: "cosmos".to_string() 
+            },
+        },
+        ChainType::Osmosis => ChainInfo {
+            name: "Osmosis".to_string(),
+            symbol: "OSMO".to_string(),
+            coin_type: 118,
+            decimals: 6,
+            address_format: AddressFormat::Bech32 { 
+                hrp: "osmo".to_string() 
+            },
+        },
+        ChainType::Juno => ChainInfo {
+            name: "Juno".to_string(),
+            symbol: "JUNO".to_string(),
+            coin_type: 118,
+            decimals: 6,
+            address_format: AddressFormat::Bech32 { 
+                hrp: "juno".to_string() 
+            },
+        },
+        ChainType::Secret => ChainInfo {
+            name: "Secret Network".to_string(),
+            symbol: "SCRT".to_string(),
+            coin_type: 529,
+            decimals: 6,
+            address_format: AddressFormat::Bech32 { 
+                hrp: "secret".to_string() 
+            },
+        },
+        ChainType::Akash => ChainInfo {
+            name: "Akash".to_string(),
+            symbol: "AKT".to_string(),
+            coin_type: 118,
+            decimals: 6,
+            address_format: AddressFormat::Bech32 { 
+                hrp: "akash".to_string() 
+            },
+        },
+        ChainType::Sei => ChainInfo {
+            name: "Sei".to_string(),
+            symbol: "SEI".to_string(),
+            coin_type: 118,
+            decimals: 6,
+            address_format: AddressFormat::Bech32 { 
+                hrp: "sei".to_string() 
+            },
+        },
+        ChainType::Celestia => ChainInfo {
+            name: "Celestia".to_string(),
+            symbol: "TIA".to_string(),
+            coin_type: 118,
+            decimals: 6,
+            address_format: AddressFormat::Bech32 { 
+                hrp: "celestia".to_string() 
+            },
+        },
+        ChainType::Injective => ChainInfo {
+            name: "Injective".to_string(),
+            symbol: "INJ".to_string(),
+            coin_type: 60,
+            decimals: 18,
+            address_format: AddressFormat::Bech32 { 
+                hrp: "inj".to_string() 
+            },
+        },
+        ChainType::Tezos => ChainInfo {
+            name: "Tezos".to_string(),
+            symbol: "XTZ".to_string(),
+            coin_type: 1729,
+            decimals: 6,
+            address_format: AddressFormat::Custom("tz1".to_string()),
+        },
+        ChainType::Algorand => ChainInfo {
+            name: "Algorand".to_string(),
+            symbol: "ALGO".to_string(),
+            coin_type: 283,
+            decimals: 6,
+            address_format: AddressFormat::Custom("ALGO".to_string()),
+        },
+        ChainType::Eos => ChainInfo {
+            name: "EOS".to_string(),
+            symbol: "EOS".to_string(),
+            coin_type: 194,
+            decimals: 4,
+            address_format: AddressFormat::Custom("EOS".to_string()),
+        },
+        ChainType::Hedera => ChainInfo {
+            name: "Hedera".to_string(),
+            symbol: "HBAR".to_string(),
+            coin_type: 3030,
+            decimals: 8,
+            address_format: AddressFormat::Custom("0.0.".to_string()),
+        },
+        ChainType::Filecoin => ChainInfo {
+            name: "Filecoin".to_string(),
+            symbol: "FIL".to_string(),
+            coin_type: 461,
+            decimals: 18,
+            address_format: AddressFormat::Custom("f1".to_string()),
+        },
+        ChainType::Mina => ChainInfo {
+            name: "Mina".to_string(),
+            symbol: "MINA".to_string(),
+            coin_type: 12586,
+            decimals: 9,
+            address_format: AddressFormat::Custom("B62".to_string()),
+        },
+        ChainType::InternetComputer => ChainInfo {
+            name: "Internet Computer".to_string(),
+            symbol: "ICP".to_string(),
+            coin_type: 223,
+            decimals: 8,
+            address_format: AddressFormat::Custom("principal".to_string()),
+        },
     }
 }
 
@@ -185,6 +321,21 @@ pub fn get_all_chain_types() -> Vec<ChainType> {
         ChainType::Ton,
         ChainType::Dogecoin,
         ChainType::Polkadot,
+        ChainType::Cosmos,
+        ChainType::Osmosis,
+        ChainType::Juno,
+        ChainType::Secret,
+        ChainType::Akash,
+        ChainType::Sei,
+        ChainType::Celestia,
+        ChainType::Injective,
+        ChainType::Tezos,
+        ChainType::Algorand,
+        ChainType::Eos,
+        ChainType::Hedera,
+        ChainType::Filecoin,
+        ChainType::Mina,
+        ChainType::InternetComputer,
     ]
 }
 
@@ -208,6 +359,21 @@ pub fn get_chain_types_by_symbol(symbol: &str) -> Vec<ChainType> {
         "TON" => vec![ChainType::Ton],
         "DOGE" => vec![ChainType::Dogecoin],
         "DOT" => vec![ChainType::Polkadot],
+        "ATOM" => vec![ChainType::Cosmos],
+        "OSMO" => vec![ChainType::Osmosis],
+        "JUNO" => vec![ChainType::Juno],
+        "SCRT" => vec![ChainType::Secret],
+        "AKT" => vec![ChainType::Akash],
+        "SEI" => vec![ChainType::Sei],
+        "TIA" => vec![ChainType::Celestia],
+        "INJ" => vec![ChainType::Injective],
+        "XTZ" => vec![ChainType::Tezos],
+        "ALGO" => vec![ChainType::Algorand],
+        "EOS" => vec![ChainType::Eos],
+        "HBAR" => vec![ChainType::Hedera],
+        "FIL" => vec![ChainType::Filecoin],
+        "MINA" => vec![ChainType::Mina],
+        "ICP" => vec![ChainType::InternetComputer],
         _ => vec![],
     }
 }
