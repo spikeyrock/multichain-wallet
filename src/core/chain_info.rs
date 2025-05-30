@@ -34,6 +34,9 @@ pub enum ChainType {
     Stellar,
     Monero,
     Near,
+    Ton,
+    Dogecoin,
+    Polkadot,
 }
 
 impl fmt::Display for ChainType {
@@ -138,6 +141,29 @@ pub fn get_chain_info(chain_type: &ChainType) -> ChainInfo {
             decimals: 24,
             address_format: AddressFormat::Custom("implicit".to_string()),
         },
+        ChainType::Ton => ChainInfo {
+            name: "Toncoin".to_string(),
+            symbol: "TON".to_string(),
+            coin_type: 607,
+            decimals: 9,
+            address_format: AddressFormat::Custom("EQ".to_string()),
+        },
+        ChainType::Dogecoin => ChainInfo {
+            name: "Dogecoin".to_string(),
+            symbol: "DOGE".to_string(),
+            coin_type: 3,
+            decimals: 8,
+            address_format: AddressFormat::Bitcoin { 
+                prefix: "D".to_string() 
+            },
+        },
+        ChainType::Polkadot => ChainInfo {
+            name: "Polkadot".to_string(),
+            symbol: "DOT".to_string(),
+            coin_type: 354,
+            decimals: 10,
+            address_format: AddressFormat::Custom("1".to_string()),
+        },
     }
 }
 
@@ -156,5 +182,32 @@ pub fn get_all_chain_types() -> Vec<ChainType> {
         ChainType::Stellar,
         ChainType::Monero,
         ChainType::Near,
+        ChainType::Ton,
+        ChainType::Dogecoin,
+        ChainType::Polkadot,
     ]
+}
+
+// Get chain types by symbol
+pub fn get_chain_types_by_symbol(symbol: &str) -> Vec<ChainType> {
+    match symbol.to_uppercase().as_str() {
+        "BTC" => vec![
+            ChainType::BitcoinLegacy,
+            ChainType::BitcoinSegwit,
+            ChainType::BitcoinTaproot,
+        ],
+        "ETH" => vec![ChainType::Ethereum],
+        "XRP" => vec![ChainType::Ripple],
+        "SOL" => vec![ChainType::Solana],
+        "TRX" => vec![ChainType::Tron],
+        "ADA" => vec![ChainType::Cardano],
+        "SUI" => vec![ChainType::Sui],
+        "XLM" => vec![ChainType::Stellar],
+        "XMR" => vec![ChainType::Monero],
+        "NEAR" => vec![ChainType::Near],
+        "TON" => vec![ChainType::Ton],
+        "DOGE" => vec![ChainType::Dogecoin],
+        "DOT" => vec![ChainType::Polkadot],
+        _ => vec![],
+    }
 }

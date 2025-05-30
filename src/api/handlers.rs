@@ -4,7 +4,7 @@ use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::api::models::*;
-use crate::core::{ChainType, get_chain_info};
+use crate::core::{get_chain_info, get_chain_types_by_symbol};
 use crate::errors::{ApiError, ApiResult};
 use crate::services::wallet::WalletService;
 
@@ -139,36 +139,70 @@ pub async fn generate_wallet(
     wallet_service: web::Data<Arc<Mutex<WalletService>>>,
     req: web::Json<GenerateWalletRequest>,
 ) -> ApiResult<HttpResponse> {
-    let chain_type: ChainType = req.address_type.clone().into();
-    let chain_info = get_chain_info(&chain_type);
+    // Get chain types for the symbol
+    let chain_types = get_chain_types_by_symbol(&req.symbol);
     
-    info!(
-        "Generating {} ({}) wallet at index {}",
-        chain_info.name, chain_info.symbol, req.index
-    );
-
+    if chain_types.is_empty() {
+        return Err(ApiError::BadRequest(
+            format!("Unsupported symbol: {}", req.symbol)
+        ));
+    }
+    
     let mut service = wallet_service.lock().await;
-    let wallet = service
-        .generate_wallet_address(
-            &req.mnemonic,
-            &req.passphrase,
-            &chain_type,
-            req.index,
-        )
-        .await?;
-
-    let response = GenerateWalletResponse {
-        address: wallet.address,
-        chain_name: wallet.chain_info.name,
-        chain_symbol: wallet.chain_info.symbol,
-        address_type: req.address_type.clone(),
-        derivation_path: wallet.derivation_path,
-        index: wallet.index,
-        public_key: wallet.public_key,
-        private_key: wallet.private_key,
-    };
-
-    Ok(HttpResponse::Ok().json(response))
+    let mut wallets = Vec::new();
+    
+    // Generate wallets for all chain types associated with the symbol
+    for chain_type in chain_types {
+        let chain_info = get_chain_info(&chain_type);
+        
+        info!(
+            "Generating {} ({}) wallet at index {}",
+            chain_info.name, chain_info.symbol, req.index
+        );
+        
+        let wallet = service
+            .generate_wallet_address(
+                &req.mnemonic,
+                &req.passphrase,
+                &chain_type,
+                req.index,
+            )
+            .await?;
+            
+        wallets.push(wallet);
+    }
+    
+    // If only one wallet (most coins), return single response
+    if wallets.len() == 1 {
+        let wallet = wallets.into_iter().next().unwrap();
+        let response = GenerateWalletResponse {
+            address: wallet.address,
+            chain_name: wallet.chain_info.name,
+            chain_symbol: wallet.chain_info.symbol,
+            address_type: wallet.chain_type.into(),
+            derivation_path: wallet.derivation_path,
+            index: wallet.index,
+            public_key: wallet.public_key,
+            private_key: wallet.private_key,
+        };
+        Ok(HttpResponse::Ok().json(response))
+    } else {
+        // For multiple wallets (BTC), return array
+        let responses: Vec<GenerateWalletResponse> = wallets
+            .into_iter()
+            .map(|wallet| GenerateWalletResponse {
+                address: wallet.address,
+                chain_name: wallet.chain_info.name,
+                chain_symbol: wallet.chain_info.symbol,
+                address_type: wallet.chain_type.into(),
+                derivation_path: wallet.derivation_path,
+                index: wallet.index,
+                public_key: wallet.public_key,
+                private_key: wallet.private_key,
+            })
+            .collect();
+        Ok(HttpResponse::Ok().json(responses))
+    }
 }
 
 #[post("/wallet/batch")]
@@ -183,30 +217,37 @@ pub async fn batch_generate_wallets(
         ));
     }
 
-    if req.address_types.is_empty() {
+    if req.symbols.is_empty() {
         return Err(ApiError::BadRequest(
-            "At least one address type must be specified".to_string(),
+            "At least one symbol must be specified".to_string(),
         ));
     }
 
+    // Convert symbols to chain types
+    let mut all_chain_types = Vec::new();
+    for symbol in &req.symbols {
+        let chain_types = get_chain_types_by_symbol(symbol);
+        if chain_types.is_empty() {
+            return Err(ApiError::BadRequest(
+                format!("Unsupported symbol: {}", symbol)
+            ));
+        }
+        all_chain_types.extend(chain_types);
+    }
+
     info!(
-        "Batch generating {} addresses for {} types starting at index {}",
+        "Batch generating {} addresses for {} chain types starting at index {}",
         req.count,
-        req.address_types.len(),
+        all_chain_types.len(),
         req.start_index
     );
-
-    let chain_types: Vec<ChainType> = req.address_types
-        .iter()
-        .map(|at| at.clone().into())
-        .collect();
 
     let mut service = wallet_service.lock().await;
     let addresses = service
         .batch_generate_wallet_addresses(
             &req.mnemonic,
             &req.passphrase,
-            &chain_types,
+            &all_chain_types,
             req.start_index,
             req.count,
         )
@@ -240,42 +281,57 @@ pub async fn get_supported_wallet_types(
     let service = wallet_service.lock().await;
     let chains = service.list_supported_chains().await;
     
-    let chain_details: Vec<serde_json::Value> = chains
-        .into_iter()
-        .map(|chain| {
-            let chain_type = match chain.name.as_str() {
-                "Bitcoin" => {
-                    // Determine Bitcoin variant based on address format
-                    match &chain.address_format {
-                        crate::core::AddressFormat::Bech32 { hrp } if hrp == "bc" => "bitcoin_segwit",
-                        crate::core::AddressFormat::Bitcoin { .. } => "bitcoin_legacy",
-                        _ => "bitcoin_taproot",
-                    }
-                },
-                "Ethereum" => "ethereum",
-                "Ripple" => "xrp",
-                "Solana" => "solana",
-                "TRON" => "tron",
-                "Cardano" => "cardano",
-                "Sui" => "sui",
-                "Stellar" => "stellar",
-                "Monero" => "monero",
-                "NEAR Protocol" => "near",
-                _ => "unknown"
-            };
-            
-            serde_json::json!({
-                "type": chain_type,
-                "name": chain.name,
-                "symbol": chain.symbol,
-                "decimals": chain.decimals,
-                "description": format!("{} ({}) - {} decimals", chain.name, chain.symbol, chain.decimals)
-            })
-        })
-        .collect();
-
+    // Group chains by symbol
+    let mut symbols_map: std::collections::HashMap<String, Vec<serde_json::Value>> = std::collections::HashMap::new();
+    
+    let total_chains = chains.len();
+    
+    for chain in chains {
+        let chain_type = match chain.name.as_str() {
+            "Bitcoin" => {
+                // Determine Bitcoin variant based on address format
+                match &chain.address_format {
+                    crate::core::AddressFormat::Bech32 { hrp } if hrp == "bc" => "bitcoin_segwit",
+                    crate::core::AddressFormat::Bitcoin { .. } => "bitcoin_legacy",
+                    _ => "bitcoin_taproot",
+                }
+            },
+            "Ethereum" => "ethereum",
+            "Ripple" => "xrp",
+            "Solana" => "solana",
+            "TRON" => "tron",
+            "Cardano" => "cardano",
+            "Sui" => "sui",
+            "Stellar" => "stellar",
+            "Monero" => "monero",
+            "NEAR Protocol" => "near",
+            "Toncoin" => "ton",
+            "Dogecoin" => "dogecoin",
+            "Polkadot" => "polkadot",
+            _ => "unknown"
+        };
+        
+        let chain_detail = serde_json::json!({
+            "type": chain_type,
+            "name": chain.name,
+            "symbol": chain.symbol,
+            "decimals": chain.decimals,
+            "description": format!("{} ({}) - {} decimals", chain.name, chain.symbol, chain.decimals)
+        });
+        
+        symbols_map.entry(chain.symbol.clone())
+            .or_insert_with(Vec::new)
+            .push(chain_detail);
+    }
+    
+    // Get list of supported symbols
+    let supported_symbols: Vec<&str> = vec![
+        "BTC", "ETH", "XRP", "SOL", "TRX", "ADA", "SUI", "XLM", "XMR", "NEAR", "TON", "DOGE", "DOT"
+    ];
+    
     Ok(HttpResponse::Ok().json(serde_json::json!({
-        "supported_chains": chain_details,
-        "total_chains": chain_details.len()
+        "supported_symbols": supported_symbols,
+        "chains_by_symbol": symbols_map,
+        "total_chains": total_chains
     })))
 }

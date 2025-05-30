@@ -75,7 +75,7 @@ pub struct GenerateWalletRequest {
     pub passphrase: String,
     #[serde(default)]
     pub index: u32,
-    pub address_type: AddressType,
+    pub symbol: String,  // Changed from address_type to symbol
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -93,6 +93,9 @@ pub enum AddressType {
     Stellar,
     Monero,
     Near,
+    Ton,
+    Dogecoin,
+    Polkadot,
 }
 
 // Convert from AddressType to ChainType
@@ -111,6 +114,9 @@ impl From<AddressType> for ChainType {
             AddressType::Stellar => ChainType::Stellar,
             AddressType::Monero => ChainType::Monero,
             AddressType::Near => ChainType::Near,
+            AddressType::Ton => ChainType::Ton,
+            AddressType::Dogecoin => ChainType::Dogecoin,
+            AddressType::Polkadot => ChainType::Polkadot,
         }
     }
 }
@@ -131,6 +137,9 @@ impl From<ChainType> for AddressType {
             ChainType::Stellar => AddressType::Stellar,
             ChainType::Monero => AddressType::Monero,
             ChainType::Near => AddressType::Near,
+            ChainType::Ton => AddressType::Ton,
+            ChainType::Dogecoin => AddressType::Dogecoin,
+            ChainType::Polkadot => AddressType::Polkadot,
         }
     }
 }
@@ -156,7 +165,7 @@ pub struct BatchGenerateWalletRequest {
     pub start_index: u32,
     #[serde(default = "default_count")]
     pub count: u32,
-    pub address_types: Vec<AddressType>,
+    pub symbols: Vec<String>,  // Changed from address_types to symbols
 }
 
 fn default_count() -> u32 {

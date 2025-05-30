@@ -36,6 +36,9 @@ blake2 = "0.10"
 # Base58 encoding for various chains
 bs58 = "0.5"
 
+# Base64 encoding for TON
+base64 = "0.22"
+
 # Bech32 for Cardano and XLM
 bech32 = "0.9"
 
