@@ -331,7 +331,7 @@ pub async fn get_supported_wallet_types(
     
     // Get list of supported symbols
     let supported_symbols: Vec<&str> = vec![
-        "BTC", "ETH", "XRP", "SOL", "TRX", "SUI", "XLM", "NEAR", "DOGE",
+        "BTC", "ETH", "XRP", "SOL", "TRX", "SUI", "NEAR", "DOGE",
         "ATOM", "OSMO", "JUNO", "SCRT", "AKT", "SEI", "TIA", "INJ", "XTZ", "FIL",
     ];
     

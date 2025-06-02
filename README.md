@@ -22,7 +22,6 @@ Please support!!
 | BTC | Bitcoin | Legacy (1...), SegWit (bc1q...), Taproot (bc1p...) |
 | ETH | Ethereum | 0x... |
 | SOL | Solana | Base58 |
-| DOT | Polkadot | SS58 (1...) |
 | XRP | Ripple | r... |
 | DOGE | Dogecoin | D... |
 | ATOM | Cosmos | cosmos1... |
@@ -36,7 +35,6 @@ Please support!!
 | NEAR | NEAR Protocol | Hex string |
 | TRX | TRON | T... |
 | SUI | Sui | 0x... |
-| XLM | Stellar | G... |
 | AKT | Akash | akash1... |
 | FIL | Filecoin | f1... |
 
