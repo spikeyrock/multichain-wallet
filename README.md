@@ -34,16 +34,11 @@ Please support!!
 | INJ | Injective | inj1... |
 | XTZ | Tezos | tz1... |
 | NEAR | NEAR Protocol | Hex string |
-| TON | Toncoin | EQ... |
 | TRX | TRON | T... |
 | SUI | Sui | 0x... |
 | XLM | Stellar | G... |
 | AKT | Akash | akash1... |
-| EOS | EOS | EOS... |
-| HBAR | Hedera | 0.0.xxxxx |
 | FIL | Filecoin | f1... |
-| MINA | Mina | B62... |
-| ICP | Internet Computer | Principal ID |
 
 ## 🛠️ Installation
 

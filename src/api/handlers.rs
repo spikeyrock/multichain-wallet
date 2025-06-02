@@ -301,11 +301,8 @@ pub async fn get_supported_wallet_types(
             "Solana" => "solana",
             "TRON" => "tron",
             "Sui" => "sui",
-            "Stellar" => "stellar",
             "NEAR Protocol" => "near",
-            "Toncoin" => "ton",
             "Dogecoin" => "dogecoin",
-            "Polkadot" => "polkadot",
             "Cosmos" => "cosmos",
             "Osmosis" => "osmosis",
             "Juno" => "juno",
@@ -315,11 +312,7 @@ pub async fn get_supported_wallet_types(
             "Celestia" => "celestia",
             "Injective" => "injective",
             "Tezos" => "tezos",
-            "EOS" => "eos",
-            "Hedera" => "hedera",
             "Filecoin" => "filecoin",
-            "Mina" => "mina",
-            "Internet Computer" => "internet_computer",
             _ => "unknown"
         };
         
@@ -338,8 +331,8 @@ pub async fn get_supported_wallet_types(
     
     // Get list of supported symbols
     let supported_symbols: Vec<&str> = vec![
-        "BTC", "ETH", "XRP", "SOL", "TRX", "SUI", "XLM", "NEAR", "TON", "DOGE", "DOT",
-        "ATOM", "OSMO", "JUNO", "SCRT", "AKT", "SEI", "TIA", "INJ", "XTZ", "EOS", "HBAR", "FIL", "MINA", "ICP"
+        "BTC", "ETH", "XRP", "SOL", "TRX", "SUI", "XLM", "NEAR", "DOGE",
+        "ATOM", "OSMO", "JUNO", "SCRT", "AKT", "SEI", "TIA", "INJ", "XTZ", "FIL",
     ];
     
     Ok(HttpResponse::Ok().json(serde_json::json!({

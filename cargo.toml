@@ -39,7 +39,6 @@ typenum = "1.17"
 # Base58 encoding for various chains
 bs58 = "0.5"
 
-# Base64 encoding for TON
 base64 = "0.22"
 
 # Bech32 for XLM

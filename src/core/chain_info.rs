@@ -30,11 +30,8 @@ pub enum ChainType {
     Solana,
     Tron,
     Sui,
-    Stellar,
     Near,
-    Ton,
     Dogecoin,
-    Polkadot,
     Cosmos,
     Osmosis,
     Juno,
@@ -44,11 +41,7 @@ pub enum ChainType {
     Celestia,
     Injective,
     Tezos,
-    Eos,
-    Hedera,
     Filecoin,
-    Mina,
-    InternetComputer,
 }
 
 impl fmt::Display for ChainType {
@@ -123,26 +116,12 @@ pub fn get_chain_info(chain_type: &ChainType) -> ChainInfo {
             decimals: 9,
             address_format: AddressFormat::Custom("0x".to_string()),
         },
-        ChainType::Stellar => ChainInfo {
-            name: "Stellar".to_string(),
-            symbol: "XLM".to_string(),
-            coin_type: 148,
-            decimals: 7,
-            address_format: AddressFormat::Custom("G".to_string()),
-        },
         ChainType::Near => ChainInfo {
             name: "NEAR Protocol".to_string(),
             symbol: "NEAR".to_string(),
             coin_type: 397,
             decimals: 24,
             address_format: AddressFormat::Custom("implicit".to_string()),
-        },
-        ChainType::Ton => ChainInfo {
-            name: "Toncoin".to_string(),
-            symbol: "TON".to_string(),
-            coin_type: 607,
-            decimals: 9,
-            address_format: AddressFormat::Custom("EQ".to_string()),
         },
         ChainType::Dogecoin => ChainInfo {
             name: "Dogecoin".to_string(),
@@ -152,13 +131,6 @@ pub fn get_chain_info(chain_type: &ChainType) -> ChainInfo {
             address_format: AddressFormat::Bitcoin { 
                 prefix: "D".to_string() 
             },
-        },
-        ChainType::Polkadot => ChainInfo {
-            name: "Polkadot".to_string(),
-            symbol: "DOT".to_string(),
-            coin_type: 354,
-            decimals: 10,
-            address_format: AddressFormat::Custom("1".to_string()),
         },
         ChainType::Cosmos => ChainInfo {
             name: "Cosmos".to_string(),
@@ -239,40 +211,12 @@ pub fn get_chain_info(chain_type: &ChainType) -> ChainInfo {
             decimals: 6,
             address_format: AddressFormat::Custom("tz1".to_string()),
         },
-        ChainType::Eos => ChainInfo {
-            name: "EOS".to_string(),
-            symbol: "EOS".to_string(),
-            coin_type: 194,
-            decimals: 4,
-            address_format: AddressFormat::Custom("EOS".to_string()),
-        },
-        ChainType::Hedera => ChainInfo {
-            name: "Hedera".to_string(),
-            symbol: "HBAR".to_string(),
-            coin_type: 3030,
-            decimals: 8,
-            address_format: AddressFormat::Custom("0.0.".to_string()),
-        },
         ChainType::Filecoin => ChainInfo {
             name: "Filecoin".to_string(),
             symbol: "FIL".to_string(),
             coin_type: 461,
             decimals: 18,
             address_format: AddressFormat::Custom("f1".to_string()),
-        },
-        ChainType::Mina => ChainInfo {
-            name: "Mina".to_string(),
-            symbol: "MINA".to_string(),
-            coin_type: 12586,
-            decimals: 9,
-            address_format: AddressFormat::Custom("B62".to_string()),
-        },
-        ChainType::InternetComputer => ChainInfo {
-            name: "Internet Computer".to_string(),
-            symbol: "ICP".to_string(),
-            coin_type: 223,
-            decimals: 8,
-            address_format: AddressFormat::Custom("principal".to_string()),
         },
     }
 }
@@ -288,11 +232,8 @@ pub fn get_all_chain_types() -> Vec<ChainType> {
         ChainType::Solana,
         ChainType::Tron,
         ChainType::Sui,
-        ChainType::Stellar,
         ChainType::Near,
-        ChainType::Ton,
         ChainType::Dogecoin,
-        ChainType::Polkadot,
         ChainType::Cosmos,
         ChainType::Osmosis,
         ChainType::Juno,
@@ -302,11 +243,7 @@ pub fn get_all_chain_types() -> Vec<ChainType> {
         ChainType::Celestia,
         ChainType::Injective,
         ChainType::Tezos,
-        ChainType::Eos,
-        ChainType::Hedera,
         ChainType::Filecoin,
-        ChainType::Mina,
-        ChainType::InternetComputer,
     ]
 }
 
@@ -323,11 +260,8 @@ pub fn get_chain_types_by_symbol(symbol: &str) -> Vec<ChainType> {
         "SOL" => vec![ChainType::Solana],
         "TRX" => vec![ChainType::Tron],
         "SUI" => vec![ChainType::Sui],
-        "XLM" => vec![ChainType::Stellar],
         "NEAR" => vec![ChainType::Near],
-        "TON" => vec![ChainType::Ton],
         "DOGE" => vec![ChainType::Dogecoin],
-        "DOT" => vec![ChainType::Polkadot],
         "ATOM" => vec![ChainType::Cosmos],
         "OSMO" => vec![ChainType::Osmosis],
         "JUNO" => vec![ChainType::Juno],
@@ -337,11 +271,7 @@ pub fn get_chain_types_by_symbol(symbol: &str) -> Vec<ChainType> {
         "TIA" => vec![ChainType::Celestia],
         "INJ" => vec![ChainType::Injective],
         "XTZ" => vec![ChainType::Tezos],
-        "EOS" => vec![ChainType::Eos],
-        "HBAR" => vec![ChainType::Hedera],
         "FIL" => vec![ChainType::Filecoin],
-        "MINA" => vec![ChainType::Mina],
-        "ICP" => vec![ChainType::InternetComputer],
         _ => vec![],
     }
 }

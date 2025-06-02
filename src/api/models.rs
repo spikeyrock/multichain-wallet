@@ -89,11 +89,8 @@ pub enum AddressType {
     Solana,
     Tron,
     Sui,
-    Stellar,
     Near,
-    Ton,
     Dogecoin,
-    Polkadot,
     Cosmos,
     Osmosis,
     Juno,
@@ -103,11 +100,8 @@ pub enum AddressType {
     Celestia,
     Injective,
     Tezos,
-    Eos,
-    Hedera,
     Filecoin,
-    Mina,
-    InternetComputer,
+
 }
 
 // Convert from AddressType to ChainType
@@ -122,11 +116,8 @@ impl From<AddressType> for ChainType {
             AddressType::Solana => ChainType::Solana,
             AddressType::Tron => ChainType::Tron,
             AddressType::Sui => ChainType::Sui,
-            AddressType::Stellar => ChainType::Stellar,
             AddressType::Near => ChainType::Near,
-            AddressType::Ton => ChainType::Ton,
             AddressType::Dogecoin => ChainType::Dogecoin,
-            AddressType::Polkadot => ChainType::Polkadot,
             AddressType::Cosmos => ChainType::Cosmos,
             AddressType::Osmosis => ChainType::Osmosis,
             AddressType::Juno => ChainType::Juno,
@@ -136,11 +127,7 @@ impl From<AddressType> for ChainType {
             AddressType::Celestia => ChainType::Celestia,
             AddressType::Injective => ChainType::Injective,
             AddressType::Tezos => ChainType::Tezos,
-            AddressType::Eos => ChainType::Eos,
-            AddressType::Hedera => ChainType::Hedera,
             AddressType::Filecoin => ChainType::Filecoin,
-            AddressType::Mina => ChainType::Mina,
-            AddressType::InternetComputer => ChainType::InternetComputer,
         }
     }
 }
@@ -157,11 +144,8 @@ impl From<ChainType> for AddressType {
             ChainType::Solana => AddressType::Solana,
             ChainType::Tron => AddressType::Tron,
             ChainType::Sui => AddressType::Sui,
-            ChainType::Stellar => AddressType::Stellar,
             ChainType::Near => AddressType::Near,
-            ChainType::Ton => AddressType::Ton,
             ChainType::Dogecoin => AddressType::Dogecoin,
-            ChainType::Polkadot => AddressType::Polkadot,
             ChainType::Cosmos => AddressType::Cosmos,
             ChainType::Osmosis => AddressType::Osmosis,
             ChainType::Juno => AddressType::Juno,
@@ -171,11 +155,7 @@ impl From<ChainType> for AddressType {
             ChainType::Celestia => AddressType::Celestia,
             ChainType::Injective => AddressType::Injective,
             ChainType::Tezos => AddressType::Tezos,
-            ChainType::Eos => AddressType::Eos,
-            ChainType::Hedera => AddressType::Hedera,
             ChainType::Filecoin => AddressType::Filecoin,
-            ChainType::Mina => AddressType::Mina,
-            ChainType::InternetComputer => AddressType::InternetComputer,
         }
     }
 }
