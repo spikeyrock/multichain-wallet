@@ -33,7 +33,7 @@ async fn main() -> std::io::Result<()> {
     let bind_address = format!("{}:{}", config.host, config.port);
 
     info!("Starting Multi-Chain Crypto Wallet API on {}", bind_address);
-    info!("Supported chains: Bitcoin (BTC), Ethereum (ETH), Ripple (XRP), Solana (SOL), TRON (TRX), Cardano (ADA), Sui (SUI), Stellar (XLM), Monero (XMR), NEAR Protocol (NEAR), Toncoin (TON), Dogecoin (DOGE), Polkadot (DOT), Cosmos (ATOM), Osmosis (OSMO), Juno (JUNO), Secret (SCRT), Akash (AKT), Sei (SEI), Celestia (TIA), Injective (INJ), Tezos (XTZ), Algorand (ALGO), EOS (EOS), Hedera (HBAR), Filecoin (FIL), Mina (MINA), Internet Computer (ICP)");
+    info!("Supported chains: Bitcoin (BTC), Ethereum (ETH), Ripple (XRP), Solana (SOL), TRON (TRX), Sui (SUI), Stellar (XLM), Monero (XMR), NEAR Protocol (NEAR), Toncoin (TON), Dogecoin (DOGE), Polkadot (DOT), Cosmos (ATOM), Osmosis (OSMO), Juno (JUNO), Secret (SCRT), Akash (AKT), Sei (SEI), Celestia (TIA), Injective (INJ), Tezos (XTZ), EOS (EOS), Hedera (HBAR), Filecoin (FIL), Mina (MINA), Internet Computer (ICP)");
 
     // Create shared services
     let wallet_service = Arc::new(tokio::sync::Mutex::new(WalletService::new()));
@@ -64,8 +64,6 @@ async fn main() -> std::io::Result<()> {
                     .service(handlers::generate_wallet)
                     .service(handlers::batch_generate_wallets)
                     .service(handlers::get_supported_wallet_types)
-                    .service(handlers::test_all_solana_methods)
-                    .service(handlers::test_solana_bip32_ed25519)
             )
     })
     .bind(&bind_address)?

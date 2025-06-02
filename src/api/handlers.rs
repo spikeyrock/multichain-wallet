@@ -300,7 +300,6 @@ pub async fn get_supported_wallet_types(
             "Ripple" => "xrp",
             "Solana" => "solana",
             "TRON" => "tron",
-            "Cardano" => "cardano",
             "Sui" => "sui",
             "Stellar" => "stellar",
             "Monero" => "monero",
@@ -317,7 +316,6 @@ pub async fn get_supported_wallet_types(
             "Celestia" => "celestia",
             "Injective" => "injective",
             "Tezos" => "tezos",
-            "Algorand" => "algorand",
             "EOS" => "eos",
             "Hedera" => "hedera",
             "Filecoin" => "filecoin",
@@ -341,8 +339,8 @@ pub async fn get_supported_wallet_types(
     
     // Get list of supported symbols
     let supported_symbols: Vec<&str> = vec![
-        "BTC", "ETH", "XRP", "SOL", "TRX", "ADA", "SUI", "XLM", "XMR", "NEAR", "TON", "DOGE", "DOT",
-        "ATOM", "OSMO", "JUNO", "SCRT", "AKT", "SEI", "TIA", "INJ", "XTZ", "ALGO", "EOS", "HBAR", "FIL", "MINA", "ICP"
+        "BTC", "ETH", "XRP", "SOL", "TRX", "SUI", "XLM", "XMR", "NEAR", "TON", "DOGE", "DOT",
+        "ATOM", "OSMO", "JUNO", "SCRT", "AKT", "SEI", "TIA", "INJ", "XTZ", "EOS", "HBAR", "FIL", "MINA", "ICP"
     ];
     
     Ok(HttpResponse::Ok().json(serde_json::json!({
@@ -352,222 +350,3 @@ pub async fn get_supported_wallet_types(
     })))
 }
 
-
-#[get("/test/solana/all")]
-pub async fn test_all_solana_methods() -> ApiResult<HttpResponse> {
-    use bip39::Mnemonic;
-    use sha2::{Sha512, Digest};
-    use hmac::{Hmac, Mac};
-    use ed25519_dalek::SigningKey;
-    
-    let mnemonic_str = "satoshi scheme wasp there brick client warm neutral joy pelican absent seven earth clog bus dizzy west fruit focus jacket demise juice fish mushroom";
-    let expected = "ErD4UTnfDXEMkruTTFPKR3sbikboT3RhNMAKwcocH8gW";
-    
-    let mnemonic = Mnemonic::parse(mnemonic_str).unwrap();
-    let seed = mnemonic.to_seed("");
-    
-    // Test different derivation paths
-    let paths: Vec<(&str, Vec<u32>)> = vec![
-        ("m/44'/501'", vec![0x80000044, 0x800001f5]),
-        ("m/44'/501'/0'", vec![0x80000044, 0x800001f5, 0x80000000]),
-        ("m/44'/501'/0'/0", vec![0x80000044, 0x800001f5, 0x80000000, 0x00000000]),
-        ("m/44'/501'/0'/0'", vec![0x80000044, 0x800001f5, 0x80000000, 0x80000000]),
-        ("m/44'/501'/0'/0/0", vec![0x80000044, 0x800001f5, 0x80000000, 0x00000000, 0x00000000]),
-        ("m/501'/0'/0/0", vec![0x800001f5, 0x80000000, 0x00000000, 0x00000000]),
-        ("m/501'", vec![0x800001f5]),
-    ];
-    
-    let mut results = vec![];
-    
-    for (path_str, indices) in paths {
-        type HmacSha512 = Hmac<Sha512>;
-        
-        let mut mac = HmacSha512::new_from_slice(b"ed25519 seed")
-            .map_err(|e| ApiError::CryptoError(e.to_string()))?;
-        mac.update(&seed);
-        let master = mac.finalize().into_bytes();
-        
-        let mut key = master[..32].to_vec();
-        let mut chain_code = master[32..].to_vec();
-        
-        for &index in &indices {
-            let mut mac = HmacSha512::new_from_slice(&chain_code)
-                .map_err(|e| ApiError::CryptoError(e.to_string()))?;
-            
-            if index & 0x80000000 != 0 {
-                // Hardened
-                mac.update(&[0x00]);
-                mac.update(&key);
-            } else {
-                // Non-hardened - need public key
-                let temp_key = SigningKey::from_bytes(&key.as_slice().try_into().unwrap());
-                mac.update(&[0x00]);
-                mac.update(temp_key.verifying_key().as_bytes());
-            }
-            mac.update(&index.to_be_bytes());
-            
-            let result = mac.finalize().into_bytes();
-            key = result[..32].to_vec();
-            chain_code = result[32..].to_vec();
-        }
-        
-        let signing_key = SigningKey::from_bytes(&key.as_slice().try_into().unwrap());
-        let address = bs58::encode(signing_key.verifying_key().as_bytes()).into_string();
-        
-        results.push(serde_json::json!({
-            "path": path_str,
-            "address": address,
-            "matches": address == expected,
-            "private_key": hex::encode(&key)
-        }));
-        
-        println!("{}: {} {}", path_str, address, if address == expected { "✓" } else { "" });
-    }
-    
-    Ok(HttpResponse::Ok().json(serde_json::json!({
-        "expected": expected,
-        "results": results
-    })))
-}
-
-
-
-#[get("/test/solana/bip32")]
-pub async fn test_solana_bip32_ed25519() -> ApiResult<HttpResponse> {
-    use bip39::Mnemonic;
-    use sha2::{Sha512, Sha256, Digest};
-    use hmac::{Hmac, Mac};
-    use ed25519_dalek::SigningKey;
-    
-    let mnemonic_str = "satoshi scheme wasp there brick client warm neutral joy pelican absent seven earth clog bus dizzy west fruit focus jacket demise juice fish mushroom";
-    let expected = "ErD4UTnfDXEMkruTTFPKR3sbikboT3RhNMAKwcocH8gW";
-    
-    let mnemonic = Mnemonic::parse(mnemonic_str).unwrap();
-    let seed = mnemonic.to_seed("");
-    
-    println!("\n=== TESTING BIP32-Ed25519 VARIANTS ===");
-    println!("Seed: {}", hex::encode(&seed));
-    
-    let mut results = vec![];
-    
-    // Test 1: Direct seed to Ed25519 (no derivation)
-    {
-        let signing_key = SigningKey::from_bytes(&seed[..32].try_into().unwrap());
-        let address = bs58::encode(signing_key.verifying_key().as_bytes()).into_string();
-        results.push(serde_json::json!({
-            "method": "Direct seed[0:32]",
-            "address": address,
-            "matches": address == expected,
-        }));
-    }
-    
-    // Test 2: SHA512 of seed, then Ed25519
-    {
-        let mut hasher = Sha512::new();
-        hasher.update(&seed);
-        let hash = hasher.finalize();
-        let signing_key = SigningKey::from_bytes(&hash[..32].try_into().unwrap());
-        let address = bs58::encode(signing_key.verifying_key().as_bytes()).into_string();
-        results.push(serde_json::json!({
-            "method": "SHA512(seed)[0:32]",
-            "address": address,
-            "matches": address == expected,
-        }));
-    }
-    
-    // Test 3: PBKDF2 style derivation
-    {
-        let mut hasher = Sha512::new();
-        hasher.update(b"mnemonic");
-        hasher.update(&seed);
-        let hash = hasher.finalize();
-        let signing_key = SigningKey::from_bytes(&hash[..32].try_into().unwrap());
-        let address = bs58::encode(signing_key.verifying_key().as_bytes()).into_string();
-        results.push(serde_json::json!({
-            "method": "SHA512('mnemonic' + seed)[0:32]",
-            "address": address,
-            "matches": address == expected,
-        }));
-    }
-    
-    // Test 4: BIP32-Ed25519 with different salt
-    {
-        type HmacSha512 = Hmac<Sha512>;
-        let mut mac = HmacSha512::new_from_slice(b"BIP0032seed") // Different salt
-            .map_err(|e| ApiError::CryptoError(e.to_string()))?;
-        mac.update(&seed);
-        let master = mac.finalize().into_bytes();
-        
-        let signing_key = SigningKey::from_bytes(&master[..32].try_into().unwrap());
-        let address = bs58::encode(signing_key.verifying_key().as_bytes()).into_string();
-        results.push(serde_json::json!({
-            "method": "HMAC-SHA512('BIP0032seed', seed)[0:32]",
-            "address": address,
-            "matches": address == expected,
-        }));
-    }
-    
-    // Test 5: Cardano-style derivation (they use Ed25519 differently)
-    {
-        type HmacSha512 = Hmac<Sha512>;
-        let mut mac = HmacSha512::new_from_slice(&seed[0..32])
-            .map_err(|e| ApiError::CryptoError(e.to_string()))?;
-        mac.update(&[1u8]); // Cardano uses a counter
-        let result = mac.finalize().into_bytes();
-        
-        let signing_key = SigningKey::from_bytes(&result[..32].try_into().unwrap());
-        let address = bs58::encode(signing_key.verifying_key().as_bytes()).into_string();
-        results.push(serde_json::json!({
-            "method": "HMAC-SHA512(seed[0:32], 0x01)[0:32]",
-            "address": address,
-            "matches": address == expected,
-        }));
-    }
-    
-    // Test 6: Trust Wallet specific - they might use coin type in the salt
-    {
-        type HmacSha512 = Hmac<Sha512>;
-        let mut mac = HmacSha512::new_from_slice(b"ed25519 seed")
-            .map_err(|e| ApiError::CryptoError(e.to_string()))?;
-        mac.update(&seed);
-        let master = mac.finalize().into_bytes();
-        
-        // Derive m/44'/501' but with different child key derivation
-        let mut key = master[..32].to_vec();
-        
-        // Try deriving with just the coin type
-        let mut mac2 = HmacSha512::new_from_slice(b"Solana seed")
-            .map_err(|e| ApiError::CryptoError(e.to_string()))?;
-        mac2.update(&key);
-        let derived = mac2.finalize().into_bytes();
-        
-        let signing_key = SigningKey::from_bytes(&derived[..32].try_into().unwrap());
-        let address = bs58::encode(signing_key.verifying_key().as_bytes()).into_string();
-        results.push(serde_json::json!({
-            "method": "Custom Trust Wallet method",
-            "address": address,
-            "matches": address == expected,
-        }));
-    }
-    
-    // Print all results
-    for result in &results {
-        println!("{}: {} {}", 
-            result["method"], 
-            result["address"],
-            if result["matches"] == true { "✓" } else { "" }
-        );
-    }
-    
-    // If none match, let's also show what the expected private key might be
-    // by reverse engineering from the public key (if we had it)
-    let expected_pubkey = bs58::decode(expected).into_vec().unwrap();
-    println!("\nExpected public key (hex): {}", hex::encode(&expected_pubkey));
-    
-    Ok(HttpResponse::Ok().json(serde_json::json!({
-        "expected": expected,
-        "expected_pubkey_hex": hex::encode(&expected_pubkey),
-        "results": results,
-        "note": "If none match, Trust Wallet might be using a proprietary derivation method"
-    })))
-}

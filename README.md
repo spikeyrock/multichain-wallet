@@ -23,7 +23,6 @@ Please support!!
 | ETH | Ethereum | 0x... |
 | SOL | Solana | Base58 |
 | DOT | Polkadot | SS58 (1...) |
-| ADA | Cardano | addr1... |
 | XRP | Ripple | r... |
 | DOGE | Dogecoin | D... |
 | ATOM | Cosmos | cosmos1... |
@@ -34,7 +33,6 @@ Please support!!
 | TIA | Celestia | celestia1... |
 | INJ | Injective | inj1... |
 | XTZ | Tezos | tz1... |
-| ALGO | Algorand | 58-char Base32 |
 | NEAR | NEAR Protocol | Hex string |
 | TON | Toncoin | EQ... |
 | TRX | TRON | T... |

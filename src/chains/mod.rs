@@ -8,7 +8,6 @@ pub mod ethereum;
 pub mod ripple;
 pub mod solana;
 pub mod tron;
-pub mod cardano;
 pub mod sui;
 pub mod stellar;
 pub mod monero;
@@ -18,7 +17,6 @@ pub mod dogecoin;
 pub mod polkadot;
 pub mod cosmos;
 pub mod tezos;
-pub mod algorand;
 pub mod eos;
 pub mod hedera;
 pub mod filecoin;
@@ -31,7 +29,6 @@ pub use ethereum::Ethereum;
 pub use ripple::Ripple;
 pub use solana::Solana;
 pub use tron::Tron;
-pub use cardano::Cardano;
 pub use sui::Sui;
 pub use stellar::Stellar;
 pub use monero::Monero;
@@ -41,7 +38,6 @@ pub use dogecoin::Dogecoin;
 pub use polkadot::Polkadot;
 pub use cosmos::CosmosChain;
 pub use tezos::Tezos;
-pub use algorand::Algorand;
 pub use eos::Eos;
 pub use hedera::Hedera;
 pub use filecoin::Filecoin;
@@ -60,7 +56,6 @@ pub fn create_chain(chain_type: &ChainType) -> Arc<dyn Chain> {
         ChainType::Ripple => Arc::new(Ripple::new()),
         ChainType::Solana => Arc::new(Solana::new()),
         ChainType::Tron => Arc::new(Tron::new()),
-        ChainType::Cardano => Arc::new(Cardano::new()),
         ChainType::Sui => Arc::new(Sui::new()),
         ChainType::Stellar => Arc::new(Stellar::new()),
         ChainType::Monero => Arc::new(Monero::new()),
@@ -77,7 +72,6 @@ pub fn create_chain(chain_type: &ChainType) -> Arc<dyn Chain> {
         ChainType::Celestia => Arc::new(CosmosChain::new(ChainType::Celestia)),
         ChainType::Injective => Arc::new(CosmosChain::new(ChainType::Injective)),
         ChainType::Tezos => Arc::new(Tezos::new()),
-        ChainType::Algorand => Arc::new(Algorand::new()),
         ChainType::Eos => Arc::new(Eos::new()),
         ChainType::Hedera => Arc::new(Hedera::new()),
         ChainType::Filecoin => Arc::new(Filecoin::new()),

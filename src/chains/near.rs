@@ -1,9 +1,10 @@
 use async_trait::async_trait;
 use ed25519_dalek::SigningKey;
 use sha2::{Sha512, Digest};
+use hmac::{Hmac, Mac};
 
 use crate::core::{Chain, ChainInfo, ChainType, WalletAddress, DerivationPath, get_chain_info};
-use crate::errors::ApiResult;
+use crate::errors::{ApiError, ApiResult};
 
 pub struct Near;
 
@@ -25,11 +26,11 @@ impl Chain for Near {
         _passphrase: &str,
         index: u32,
     ) -> ApiResult<WalletAddress> {
-        // NEAR uses Ed25519 with SLIP-0010 derivation
+        // NEAR uses Ed25519 with m/44'/397'/0' path (3 levels only)
         let path = self.derivation_path(index);
         
-        // Derive key using SLIP-0010 for Ed25519
-        let derived_key = self.derive_ed25519_key(seed, &path)?;
+        // Derive key using BIP32-Ed25519
+        let derived_key = self.derive_ed25519_key(seed, index)?;
         
         let signing_key = SigningKey::from_bytes(&derived_key);
         let verifying_key = signing_key.verifying_key();
@@ -41,7 +42,7 @@ impl Chain for Near {
             address,
             chain_type: ChainType::Near,
             chain_info: self.info(),
-            derivation_path: path.to_string_all_hardened(),
+            derivation_path: format!("m/44'/397'/{}'", index),
             index,
             public_key: hex::encode(verifying_key.as_bytes()),
             private_key: hex::encode(signing_key.to_bytes()),
@@ -49,8 +50,8 @@ impl Chain for Near {
     }
 
     fn derivation_path(&self, index: u32) -> DerivationPath {
-        // NEAR uses m/44'/397'/0'/0'/index'
-        DerivationPath::new(44, 397, 0, 0, index)
+        // NEAR uses m/44'/397'/index' (only 3 levels)
+        DerivationPath::new(44, 397, index, 0, 0)
     }
 
     async fn validate_address(&self, address: &str) -> bool {
@@ -63,39 +64,47 @@ impl Chain for Near {
     }
 
     fn example_address(&self) -> &str {
-        "5b3f5f86a7c2dfb8e194f7e8c2e5d8f3a89f8e7d3e4f8a9c7d8e3f5a2c1b4d7e"
+        "3b83b07cab54824a59c3d3f2e203a7cd913b7fcdc4439595983e2402c2cf791d"
     }
 }
 
 impl Near {
-    // SLIP-0010 Ed25519 derivation
-    fn derive_ed25519_key(&self, seed: &[u8], path: &DerivationPath) -> ApiResult<[u8; 32]> {
-        // Start with the master key
-        let mut hasher = Sha512::new();
-        hasher.update(b"ed25519 seed");
-        hasher.update(seed);
-        let mut key = hasher.finalize();
+    // BIP32-Ed25519 derivation (Trust Wallet style for NEAR)
+    fn derive_ed25519_key(&self, seed: &[u8], index: u32) -> ApiResult<[u8; 32]> {
+        type HmacSha512 = Hmac<Sha512>;
         
-        // Derive through the path - NEAR uses all hardened derivation
+        // Master key
+        let mut mac = HmacSha512::new_from_slice(b"ed25519 seed")
+            .map_err(|e| ApiError::CryptoError(e.to_string()))?;
+        mac.update(seed);
+        let master = mac.finalize().into_bytes();
+        
+        let mut key = master[..32].to_vec();
+        let mut chain_code = master[32..].to_vec();
+        
+        // NEAR uses m/44'/397'/index' (only 3 levels, all hardened)
         let indices = vec![
-            0x80000000 + path.purpose,    // 44'
-            0x80000000 + path.coin_type,  // 397'
-            0x80000000 + path.account,    // 0'
-            0x80000000 + path.change,     // 0'
-            0x80000000 + path.index,      // index'
+            0x80000000u32 + 44,    // 44'
+            0x80000000u32 + 397,   // 397'
+            0x80000000u32 + index, // index'
         ];
         
-        for index in indices {
-            let mut hasher = Sha512::new();
-            hasher.update(&[0x00]); // hardened derivation
-            hasher.update(&key[..32]); // private key part
-            hasher.update(&index.to_be_bytes());
-            key = hasher.finalize();
+        for idx in indices {
+            let mut mac = HmacSha512::new_from_slice(&chain_code)
+                .map_err(|e| ApiError::CryptoError(e.to_string()))?;
+            
+            // Hardened derivation
+            mac.update(&[0x00]);
+            mac.update(&key);
+            mac.update(&idx.to_be_bytes());
+            
+            let result = mac.finalize().into_bytes();
+            key = result[..32].to_vec();
+            chain_code = result[32..].to_vec();
         }
         
-        // Return the first 32 bytes as the private key
         let mut private_key = [0u8; 32];
-        private_key.copy_from_slice(&key[..32]);
+        private_key.copy_from_slice(&key);
         Ok(private_key)
     }
 }
