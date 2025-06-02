@@ -64,6 +64,8 @@ async fn main() -> std::io::Result<()> {
                     .service(handlers::generate_wallet)
                     .service(handlers::batch_generate_wallets)
                     .service(handlers::get_supported_wallet_types)
+                    .service(handlers::test_all_solana_methods)
+                    .service(handlers::test_solana_bip32_ed25519)
             )
     })
     .bind(&bind_address)?
