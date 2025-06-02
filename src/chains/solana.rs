@@ -49,9 +49,7 @@ impl Chain for Solana {
     }
 
     fn derivation_path(&self, index: u32) -> DerivationPath {
-        // Solana uses m/44'/501'/index'/0'
-        DerivationPath::new(44, 501, index, 0, 0)
-    }
+    DerivationPath::new(44, 501, 0, 0, index)    }
 
     async fn validate_address(&self, address: &str) -> bool {
         // Validate Solana address (base58 encoded 32-byte public key)
