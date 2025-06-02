@@ -10,7 +10,6 @@ pub mod solana;
 pub mod tron;
 pub mod sui;
 pub mod stellar;
-pub mod monero;
 pub mod near;
 pub mod ton;
 pub mod dogecoin;
@@ -31,7 +30,6 @@ pub use solana::Solana;
 pub use tron::Tron;
 pub use sui::Sui;
 pub use stellar::Stellar;
-pub use monero::Monero;
 pub use near::Near;
 pub use ton::Ton;
 pub use dogecoin::Dogecoin;
@@ -58,7 +56,6 @@ pub fn create_chain(chain_type: &ChainType) -> Arc<dyn Chain> {
         ChainType::Tron => Arc::new(Tron::new()),
         ChainType::Sui => Arc::new(Sui::new()),
         ChainType::Stellar => Arc::new(Stellar::new()),
-        ChainType::Monero => Arc::new(Monero::new()),
         ChainType::Near => Arc::new(Near::new()),
         ChainType::Ton => Arc::new(Ton::new()),
         ChainType::Dogecoin => Arc::new(Dogecoin::new(Network::Bitcoin)),

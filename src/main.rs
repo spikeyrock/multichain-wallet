@@ -33,7 +33,7 @@ async fn main() -> std::io::Result<()> {
     let bind_address = format!("{}:{}", config.host, config.port);
 
     info!("Starting Multi-Chain Crypto Wallet API on {}", bind_address);
-    info!("Supported chains: Bitcoin (BTC), Ethereum (ETH), Ripple (XRP), Solana (SOL), TRON (TRX), Sui (SUI), Stellar (XLM), Monero (XMR), NEAR Protocol (NEAR), Toncoin (TON), Dogecoin (DOGE), Polkadot (DOT), Cosmos (ATOM), Osmosis (OSMO), Juno (JUNO), Secret (SCRT), Akash (AKT), Sei (SEI), Celestia (TIA), Injective (INJ), Tezos (XTZ), EOS (EOS), Hedera (HBAR), Filecoin (FIL), Mina (MINA), Internet Computer (ICP)");
+    info!("Supported chains: Bitcoin (BTC), Ethereum (ETH), Ripple (XRP), Solana (SOL), TRON (TRX), Sui (SUI), Stellar (XLM), NEAR Protocol (NEAR), Toncoin (TON), Dogecoin (DOGE), Polkadot (DOT), Cosmos (ATOM), Osmosis (OSMO), Juno (JUNO), Secret (SCRT), Akash (AKT), Sei (SEI), Celestia (TIA), Injective (INJ), Tezos (XTZ), EOS (EOS), Hedera (HBAR), Filecoin (FIL), Mina (MINA), Internet Computer (ICP)");
 
     // Create shared services
     let wallet_service = Arc::new(tokio::sync::Mutex::new(WalletService::new()));

@@ -51,9 +51,6 @@ sha2 = "0.10"
 # RIPEMD160 for XRP
 ripemd = "0.1"
 
-# Monero specific
-monero = "0.20"
-
 # CRC for XLM
 crc = "3.0"
 

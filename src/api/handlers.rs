@@ -302,7 +302,6 @@ pub async fn get_supported_wallet_types(
             "TRON" => "tron",
             "Sui" => "sui",
             "Stellar" => "stellar",
-            "Monero" => "monero",
             "NEAR Protocol" => "near",
             "Toncoin" => "ton",
             "Dogecoin" => "dogecoin",
@@ -339,7 +338,7 @@ pub async fn get_supported_wallet_types(
     
     // Get list of supported symbols
     let supported_symbols: Vec<&str> = vec![
-        "BTC", "ETH", "XRP", "SOL", "TRX", "SUI", "XLM", "XMR", "NEAR", "TON", "DOGE", "DOT",
+        "BTC", "ETH", "XRP", "SOL", "TRX", "SUI", "XLM", "NEAR", "TON", "DOGE", "DOT",
         "ATOM", "OSMO", "JUNO", "SCRT", "AKT", "SEI", "TIA", "INJ", "XTZ", "EOS", "HBAR", "FIL", "MINA", "ICP"
     ];
     

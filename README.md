@@ -38,7 +38,6 @@ Please support!!
 | TRX | TRON | T... |
 | SUI | Sui | 0x... |
 | XLM | Stellar | G... |
-| XMR | Monero | 4... |
 | AKT | Akash | akash1... |
 | EOS | EOS | EOS... |
 | HBAR | Hedera | 0.0.xxxxx |
