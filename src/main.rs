@@ -1,7 +1,7 @@
+// src/main.rs - Update your main.rs to use the middleware
+use actix_web::{web, App, HttpServer, middleware};
 use actix_cors::Cors;
-use actix_web::{middleware, web, App, HttpServer};
-use dotenv::dotenv;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
@@ -11,50 +11,49 @@ mod config;
 mod core;
 mod errors;
 mod services;
+mod middleware; // Add this line
 
 use api::handlers;
 use config::Config;
 use services::wallet::WalletService;
+use middleware::auth::ApiKeyAuth; // Add this line
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Load environment variables
-    dotenv().ok();
-
     // Initialize tracing
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::INFO)
         .finish();
+    
     tracing::subscriber::set_global_default(subscriber)
         .expect("setting default subscriber failed");
 
     // Load configuration
-    let config = Config::from_env().expect("Failed to load configuration");
-    let bind_address = format!("{}:{}", config.host, config.port);
-
-    info!("Starting Multi-Chain Crypto Wallet API on {}", bind_address);
-    info!("Supported chains: Bitcoin (BTC), Ethereum (ETH), Ripple (XRP), Solana (SOL), TRON (TRX), Sui (SUI), NEAR Protocol (NEAR), Dogecoin (DOGE), Cosmos (ATOM), Osmosis (OSMO), Juno (JUNO), Secret (SCRT), Akash (AKT), Sei (SEI), Celestia (TIA), Injective (INJ), Tezos (XTZ), Filecoin (FIL)");
-
-    // Create shared services
-    let wallet_service = Arc::new(tokio::sync::Mutex::new(WalletService::new()));
-
+    let config = Config::from_env();
+    
+    // Ensure API_KEY is set
+    if std::env::var("API_KEY").is_err() {
+        panic!("API_KEY environment variable must be set");
+    }
+    
+    info!("Starting Multichain Wallet API on {}:{}", config.host, config.port);
+    
+    // Create shared wallet service
+    let wallet_service = Arc::new(Mutex::new(WalletService::new()));
+    
     // Start HTTP server
     HttpServer::new(move || {
-        // Configure CORS
         let cors = Cors::default()
             .allow_any_origin()
-            .allow_any_method()
             .allow_any_header()
+            .allow_any_method()
             .max_age(3600);
-
+            
         App::new()
-            // Add services to app data
             .app_data(web::Data::new(wallet_service.clone()))
-            // Add middlewares
             .wrap(cors)
             .wrap(middleware::Logger::default())
-            .wrap(tracing_actix_web::TracingLogger::default())
-            // Configure routes
+            .wrap(ApiKeyAuth) // Add API key authentication middleware
             .service(
                 web::scope("/api/v1")
                     .service(handlers::health_check)
@@ -63,10 +62,10 @@ async fn main() -> std::io::Result<()> {
                     .service(handlers::get_supported_languages)
                     .service(handlers::generate_wallet)
                     .service(handlers::batch_generate_wallets)
-                    .service(handlers::get_supported_wallet_types)
+                    .service(handlers::get_wallet_types)
             )
     })
-    .bind(&bind_address)?
+    .bind((config.host, config.port))?
     .run()
     .await
 }
