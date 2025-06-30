@@ -1,7 +1,8 @@
 // src/middleware/auth.rs
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
-    Error, HttpMessage, HttpResponse,
+    body::EitherBody,
+    Error, HttpResponse,
 };
 use futures_util::future::LocalBoxFuture;
 use std::future::{ready, Ready};
@@ -15,7 +16,7 @@ where
     S::Future: 'static,
     B: 'static,
 {
-    type Response = ServiceResponse<B>;
+    type Response = ServiceResponse<EitherBody<B>>;
     type Error = Error;
     type Transform = ApiKeyAuthMiddleware<S>;
     type InitError = ();
@@ -38,7 +39,7 @@ where
     S::Future: 'static,
     B: 'static,
 {
-    type Response = ServiceResponse<B>;
+    type Response = ServiceResponse<EitherBody<B>>;
     type Error = Error;
     type Future = LocalBoxFuture<'static, Result<Self::Response, Self::Error>>;
 
@@ -50,7 +51,8 @@ where
         Box::pin(async move {
             // Skip auth for health check endpoint
             if req.path() == "/api/v1/health" {
-                return service.call(req).await;
+                let res = service.call(req).await?;
+                return Ok(res.map_into_left_body());
             }
 
             // Get API key from environment
@@ -65,7 +67,8 @@ where
             match api_key {
                 Some(key) if key == expected_api_key => {
                     // Valid API key, proceed with request
-                    service.call(req).await
+                    let res = service.call(req).await?;
+                    Ok(res.map_into_left_body())
                 }
                 _ => {
                     // Invalid or missing API key
@@ -78,7 +81,8 @@ where
                             }
                         }));
                     
-                    Ok(req.into_response(response))
+                    let (req, _) = req.into_parts();
+                    Ok(ServiceResponse::new(req, response).map_into_right_body())
                 }
             }
         })

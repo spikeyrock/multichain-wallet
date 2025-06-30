@@ -20,6 +20,9 @@ use middleware::auth::ApiKeyAuth;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // Load .env file
+    dotenv::dotenv().ok();
+    
     // Initialize tracing
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::INFO)
@@ -64,7 +67,7 @@ async fn main() -> std::io::Result<()> {
                     .service(handlers::get_supported_languages)
                     .service(handlers::generate_wallet)
                     .service(handlers::batch_generate_wallets)
-                    .service(handlers::get_wallet_type_list)
+                    .service(handlers::get_supported_wallet_types)
             )
     })
     .bind((host, port))?

@@ -1,5 +1,4 @@
 [package]
-
 name = "crypto-wallet-api"
 version = "0.1.0"
 edition = "2021"
@@ -76,6 +75,9 @@ config = "0.13"
 # Time
 chrono = "0.4"
 hmac = "0.12"
+
+# Futures
+futures-util = "0.3"
 
 [dev-dependencies]
 actix-rt = "2.9"
