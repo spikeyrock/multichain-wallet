@@ -29,7 +29,7 @@ impl Chain for Solana {
         _passphrase: &str,
         index: u32,
     ) -> ApiResult<WalletAddress> {
-        // Trust Wallet uses m/44'/501'/index' for Solana (only 3 levels!)
+        // Phantom wallet uses m/44'/501'/0'/0' for Solana (4 levels)
         let path = self.derivation_path(index);
         let derived_key = self.derive_ed25519_key(seed, &path, index)?;
         
@@ -42,7 +42,7 @@ impl Chain for Solana {
             address,
             chain_type: ChainType::Solana,
             chain_info: self.info(),
-            derivation_path: format!("m/44'/501'/{}'", index),
+            derivation_path: format!("m/44'/501'/{}'/0'", index),
             index,
             public_key: hex::encode(verifying_key.as_bytes()),
             private_key: hex::encode(signing_key.to_bytes()),
@@ -50,7 +50,7 @@ impl Chain for Solana {
     }
 
     fn derivation_path(&self, index: u32) -> DerivationPath {
-        // Trust Wallet uses index at position 3 for Solana
+        // Phantom wallet uses m/44'/501'/account'/0' for Solana
         DerivationPath::new(44, 501, index, 0, 0)
     }
 
@@ -79,11 +79,12 @@ impl Solana {
         let mut key = master[..32].to_vec();
         let mut chain_code = master[32..].to_vec();
         
-        // Trust Wallet Solana: m/44'/501'/index' (only 3 levels, all hardened)
+        // Phantom Wallet Solana: m/44'/501'/0'/0' (4 levels, all hardened)
         let indices = vec![
             0x80000000u32 + 44,    // 44'
             0x80000000u32 + 501,   // 501'
-            0x80000000u32 + index, // index'
+            0x80000000u32 + index, // account' (typically 0)
+            0x80000000u32 + 0,     // 0' (change)
         ];
         
         for idx in indices {
