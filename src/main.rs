@@ -1,7 +1,8 @@
 // src/main.rs - Fixed version
 use actix_web::{web, App, HttpServer, middleware as actix_middleware};
 use actix_cors::Cors;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
