@@ -5,6 +5,7 @@ use crate::core::{Chain, ChainType};
 // Chain modules
 pub mod bitcoin;
 pub mod ethereum;
+pub mod evm;
 pub mod ripple;
 pub mod solana;
 pub mod tron;
@@ -18,6 +19,7 @@ pub mod filecoin;
 // Re-export for convenience
 pub use bitcoin::{BitcoinLegacy, BitcoinSegwit, BitcoinTaproot};
 pub use ethereum::Ethereum;
+pub use evm::EvmChain;
 pub use ripple::Ripple;
 pub use solana::Solana;
 pub use tron::Tron;
@@ -53,5 +55,11 @@ pub fn create_chain(chain_type: &ChainType) -> Arc<dyn Chain> {
         ChainType::Injective => Arc::new(CosmosChain::new(ChainType::Injective)),
         ChainType::Tezos => Arc::new(Tezos::new()),
         ChainType::Filecoin => Arc::new(Filecoin::new()),
+        // Layer 2 EVM chains
+        ChainType::Base => Arc::new(EvmChain::new(ChainType::Base)),
+        ChainType::Arbitrum => Arc::new(EvmChain::new(ChainType::Arbitrum)),
+        ChainType::Optimism => Arc::new(EvmChain::new(ChainType::Optimism)),
+        ChainType::Polygon => Arc::new(EvmChain::new(ChainType::Polygon)),
+        ChainType::Avalanche => Arc::new(EvmChain::new(ChainType::Avalanche)),
     }
 }

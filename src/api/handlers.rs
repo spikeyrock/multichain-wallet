@@ -4,7 +4,7 @@ use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::api::models::*;
-use crate::core::{get_chain_info, get_chain_types_by_symbol};
+use crate::core::{get_chain_info, get_chain_types_by_symbol, get_token_registry};
 use crate::errors::{ApiError, ApiResult};
 use crate::services::wallet::WalletService;
 
@@ -172,6 +172,61 @@ pub async fn generate_wallet(
         wallets.push(wallet);
     }
     
+    let registry = get_token_registry();
+    
+    // Helper function to get chain identifier
+    let get_chain_identifier = |chain_type: &crate::core::ChainType| -> &'static str {
+        match chain_type {
+            crate::core::ChainType::Ethereum => "Ethereum",
+            crate::core::ChainType::Base => "Base",
+            crate::core::ChainType::Arbitrum => "Arbitrum",
+            crate::core::ChainType::Optimism => "Optimism",
+            crate::core::ChainType::Polygon => "Polygon",
+            crate::core::ChainType::Avalanche => "Avalanche",
+            crate::core::ChainType::BitcoinSegwit => "Bitcoin",
+            crate::core::ChainType::BitcoinLegacy => "Bitcoin",
+            crate::core::ChainType::BitcoinTaproot => "Bitcoin",
+            crate::core::ChainType::Solana => "Solana",
+            crate::core::ChainType::Tron => "Tron",
+            crate::core::ChainType::Ripple => "Ripple",
+            crate::core::ChainType::Sui => "Sui",
+            crate::core::ChainType::Near => "Near",
+            crate::core::ChainType::Dogecoin => "Dogecoin",
+            crate::core::ChainType::Cosmos => "Cosmos",
+            crate::core::ChainType::Osmosis => "Osmosis",
+            crate::core::ChainType::Juno => "Juno",
+            crate::core::ChainType::Secret => "Secret",
+            crate::core::ChainType::Akash => "Akash",
+            crate::core::ChainType::Sei => "Sei",
+            crate::core::ChainType::Celestia => "Celestia",
+            crate::core::ChainType::Injective => "Injective",
+            crate::core::ChainType::Tezos => "Tezos",
+            crate::core::ChainType::Filecoin => "Filecoin",
+        }
+    };
+    
+    // Helper function to get supported tokens for a chain
+    let get_supported_tokens = |chain_type: &crate::core::ChainType| -> Option<Vec<TokenInfo>> {
+        let chain_identifier = get_chain_identifier(chain_type);
+        let chain_tokens = registry.get_tokens_by_chain(chain_identifier);
+        let tokens: Vec<TokenInfo> = chain_tokens
+            .into_iter()
+            .filter_map(|token| {
+                token.deployments.iter()
+                    .find(|d| d.chain == chain_identifier || d.chain_type == chain_identifier)
+                    .map(|deployment| TokenInfo {
+                        symbol: deployment.symbol.clone(),
+                        name: token.name.clone(),
+                        contract_address: deployment.contract_address.clone(),
+                        decimals: deployment.decimals,
+                        token_standard: deployment.token_standard.clone(),
+                    })
+            })
+            .collect();
+        
+        if tokens.is_empty() { None } else { Some(tokens) }
+    };
+    
     // If only one wallet (most coins), return single response
     if wallets.len() == 1 {
         let wallet = wallets.into_iter().next().unwrap();
@@ -179,26 +234,30 @@ pub async fn generate_wallet(
             address: wallet.address,
             chain_name: wallet.chain_info.name,
             chain_symbol: wallet.chain_info.symbol,
-            address_type: wallet.chain_type.into(),
+            address_type: wallet.chain_type.clone().into(),
             derivation_path: wallet.derivation_path,
             index: wallet.index,
             public_key: wallet.public_key,
             private_key: wallet.private_key,
+            supported_tokens: get_supported_tokens(&wallet.chain_type),
         };
         Ok(HttpResponse::Ok().json(response))
     } else {
         // For multiple wallets (BTC), return array
         let responses: Vec<GenerateWalletResponse> = wallets
             .into_iter()
-            .map(|wallet| GenerateWalletResponse {
-                address: wallet.address,
-                chain_name: wallet.chain_info.name,
-                chain_symbol: wallet.chain_info.symbol,
-                address_type: wallet.chain_type.into(),
-                derivation_path: wallet.derivation_path,
-                index: wallet.index,
-                public_key: wallet.public_key,
-                private_key: wallet.private_key,
+            .map(|wallet| {
+                GenerateWalletResponse {
+                    address: wallet.address.clone(),
+                    chain_name: wallet.chain_info.name,
+                    chain_symbol: wallet.chain_info.symbol,
+                    address_type: wallet.chain_type.clone().into(),
+                    derivation_path: wallet.derivation_path,
+                    index: wallet.index,
+                    public_key: wallet.public_key,
+                    private_key: wallet.private_key,
+                    supported_tokens: get_supported_tokens(&wallet.chain_type),
+                }
             })
             .collect();
         Ok(HttpResponse::Ok().json(responses))
@@ -253,17 +312,69 @@ pub async fn batch_generate_wallets(
         )
         .await?;
 
+    let registry = get_token_registry();
+    
     let response_addresses: Vec<WalletAddressResponse> = addresses
         .into_iter()
-        .map(|wallet| WalletAddressResponse {
-            address: wallet.address,
-            chain_name: wallet.chain_info.name,
-            chain_symbol: wallet.chain_info.symbol,
-            address_type: wallet.chain_type.into(),
-            derivation_path: wallet.derivation_path,
-            index: wallet.index,
-            public_key: wallet.public_key,
-            private_key: wallet.private_key,
+        .map(|wallet| {
+            // Get the chain identifier (convert chain type to string)
+            let chain_identifier = match &wallet.chain_type {
+                crate::core::ChainType::Ethereum => "Ethereum",
+                crate::core::ChainType::Base => "Base",
+                crate::core::ChainType::Arbitrum => "Arbitrum",
+                crate::core::ChainType::Optimism => "Optimism",
+                crate::core::ChainType::Polygon => "Polygon",
+                crate::core::ChainType::Avalanche => "Avalanche",
+                crate::core::ChainType::BitcoinSegwit => "Bitcoin",
+                crate::core::ChainType::BitcoinLegacy => "Bitcoin",
+                crate::core::ChainType::BitcoinTaproot => "Bitcoin",
+                crate::core::ChainType::Solana => "Solana",
+                crate::core::ChainType::Tron => "Tron",
+                crate::core::ChainType::Ripple => "Ripple",
+                crate::core::ChainType::Sui => "Sui",
+                crate::core::ChainType::Near => "Near",
+                crate::core::ChainType::Dogecoin => "Dogecoin",
+                crate::core::ChainType::Cosmos => "Cosmos",
+                crate::core::ChainType::Osmosis => "Osmosis",
+                crate::core::ChainType::Juno => "Juno",
+                crate::core::ChainType::Secret => "Secret",
+                crate::core::ChainType::Akash => "Akash",
+                crate::core::ChainType::Sei => "Sei",
+                crate::core::ChainType::Celestia => "Celestia",
+                crate::core::ChainType::Injective => "Injective",
+                crate::core::ChainType::Tezos => "Tezos",
+                crate::core::ChainType::Filecoin => "Filecoin",
+            };
+            
+            // Get all tokens supported on this chain
+            let chain_tokens = registry.get_tokens_by_chain(chain_identifier);
+            let supported_tokens: Vec<TokenInfo> = chain_tokens
+                .into_iter()
+                .filter_map(|token| {
+                    // Find the deployment for this specific chain
+                    token.deployments.iter()
+                        .find(|d| d.chain == chain_identifier || d.chain_type == chain_identifier)
+                        .map(|deployment| TokenInfo {
+                            symbol: deployment.symbol.clone(),
+                            name: token.name.clone(),
+                            contract_address: deployment.contract_address.clone(),
+                            decimals: deployment.decimals,
+                            token_standard: deployment.token_standard.clone(),
+                        })
+                })
+                .collect();
+            
+            WalletAddressResponse {
+                address: wallet.address.clone(),
+                chain_name: wallet.chain_info.name,
+                chain_symbol: wallet.chain_info.symbol,
+                address_type: wallet.chain_type.into(),
+                derivation_path: wallet.derivation_path,
+                index: wallet.index,
+                public_key: wallet.public_key,
+                private_key: wallet.private_key,
+                supported_tokens: if supported_tokens.is_empty() { None } else { Some(supported_tokens) },
+            }
         })
         .collect();
 

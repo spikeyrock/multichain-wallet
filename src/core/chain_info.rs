@@ -42,6 +42,12 @@ pub enum ChainType {
     Injective,
     Tezos,
     Filecoin,
+    // Layer 2 EVM chains
+    Base,
+    Arbitrum,
+    Optimism,
+    Polygon,
+    Avalanche,
 }
 
 impl fmt::Display for ChainType {
@@ -218,6 +224,42 @@ pub fn get_chain_info(chain_type: &ChainType) -> ChainInfo {
             decimals: 18,
             address_format: AddressFormat::Custom("f1".to_string()),
         },
+        // Layer 2 EVM chains
+        ChainType::Base => ChainInfo {
+            name: "Base".to_string(),
+            symbol: "ETH".to_string(),
+            coin_type: 60, // Same as Ethereum
+            decimals: 18,
+            address_format: AddressFormat::Ethereum,
+        },
+        ChainType::Arbitrum => ChainInfo {
+            name: "Arbitrum".to_string(),
+            symbol: "ETH".to_string(),
+            coin_type: 60, // Same as Ethereum
+            decimals: 18,
+            address_format: AddressFormat::Ethereum,
+        },
+        ChainType::Optimism => ChainInfo {
+            name: "Optimism".to_string(),
+            symbol: "ETH".to_string(),
+            coin_type: 60, // Same as Ethereum
+            decimals: 18,
+            address_format: AddressFormat::Ethereum,
+        },
+        ChainType::Polygon => ChainInfo {
+            name: "Polygon".to_string(),
+            symbol: "MATIC".to_string(),
+            coin_type: 60, // Same as Ethereum
+            decimals: 18,
+            address_format: AddressFormat::Ethereum,
+        },
+        ChainType::Avalanche => ChainInfo {
+            name: "Avalanche".to_string(),
+            symbol: "AVAX".to_string(),
+            coin_type: 60, // Same as Ethereum for C-Chain
+            decimals: 18,
+            address_format: AddressFormat::Ethereum,
+        },
     }
 }
 
@@ -244,6 +286,12 @@ pub fn get_all_chain_types() -> Vec<ChainType> {
         ChainType::Injective,
         ChainType::Tezos,
         ChainType::Filecoin,
+        // Layer 2s
+        ChainType::Base,
+        ChainType::Arbitrum,
+        ChainType::Optimism,
+        ChainType::Polygon,
+        ChainType::Avalanche,
     ]
 }
 
@@ -255,7 +303,12 @@ pub fn get_chain_types_by_symbol(symbol: &str) -> Vec<ChainType> {
             ChainType::BitcoinSegwit,
             ChainType::BitcoinTaproot,
         ],
-        "ETH" => vec![ChainType::Ethereum],
+        "ETH" => vec![
+            ChainType::Ethereum,
+            ChainType::Base,
+            ChainType::Arbitrum,
+            ChainType::Optimism,
+        ],
         "XRP" => vec![ChainType::Ripple],
         "SOL" => vec![ChainType::Solana],
         "TRX" => vec![ChainType::Tron],
@@ -272,6 +325,8 @@ pub fn get_chain_types_by_symbol(symbol: &str) -> Vec<ChainType> {
         "INJ" => vec![ChainType::Injective],
         "XTZ" => vec![ChainType::Tezos],
         "FIL" => vec![ChainType::Filecoin],
+        "MATIC" => vec![ChainType::Polygon],
+        "AVAX" => vec![ChainType::Avalanche],
         _ => vec![],
     }
 }

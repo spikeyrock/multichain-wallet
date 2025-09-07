@@ -156,6 +156,12 @@ impl From<ChainType> for AddressType {
             ChainType::Injective => AddressType::Injective,
             ChainType::Tezos => AddressType::Tezos,
             ChainType::Filecoin => AddressType::Filecoin,
+            // Layer 2 EVM chains use Ethereum address type
+            ChainType::Base => AddressType::Ethereum,
+            ChainType::Arbitrum => AddressType::Ethereum,
+            ChainType::Optimism => AddressType::Ethereum,
+            ChainType::Polygon => AddressType::Ethereum,
+            ChainType::Avalanche => AddressType::Ethereum,
         }
     }
 }
@@ -170,6 +176,8 @@ pub struct GenerateWalletResponse {
     pub index: u32,
     pub public_key: String,
     pub private_key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub supported_tokens: Option<Vec<TokenInfo>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -203,6 +211,17 @@ pub struct WalletAddressResponse {
     pub index: u32,
     pub public_key: String,
     pub private_key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub supported_tokens: Option<Vec<TokenInfo>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TokenInfo {
+    pub symbol: String,
+    pub name: String,
+    pub contract_address: Option<String>,
+    pub decimals: u8,
+    pub token_standard: String,
 }
 
 // Backward compatibility

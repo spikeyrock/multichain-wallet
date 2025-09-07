@@ -78,6 +78,7 @@ hmac = "0.12"
 
 # Futures
 futures-util = "0.3"
+once_cell = "1.21.3"
 
 [dev-dependencies]
 actix-rt = "2.9"

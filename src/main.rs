@@ -14,7 +14,7 @@ mod errors;
 mod services;
 mod middleware;
 
-use api::handlers;
+use api::{handlers, tokens};
 use config::Config;
 use services::wallet::WalletService;
 use middleware::auth::ApiKeyAuth;
@@ -69,6 +69,7 @@ async fn main() -> std::io::Result<()> {
                     .service(handlers::generate_wallet)
                     .service(handlers::batch_generate_wallets)
                     .service(handlers::get_supported_wallet_types)
+                    .configure(tokens::configure_routes)
             )
     })
     .bind((host, port))?
