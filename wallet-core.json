@@ -1,0 +1,531 @@
+{
+	"info": {
+		"_postman_id": "4dd8f555-6801-45ef-9c62-355b06eaaab8",
+		"name": "Multichain Wallet API",
+		"description": "Stateless cryptographic service for generating mnemonics and wallet addresses across multiple blockchains with comprehensive token support",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24585920"
+	},
+	"item": [
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"health"
+							]
+						},
+						"description": "Check API health status - No authentication required"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Supported Languages",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/languages",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"languages"
+							]
+						},
+						"description": "Get list of supported languages for mnemonic generation"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Mnemonic Operations",
+			"item": [
+				{
+					"name": "Generate Mnemonic",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"word_count\": 12,\n  \"language\": \"english\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/mnemonic/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"mnemonic",
+								"generate"
+							]
+						},
+						"description": "Generate a 12-word BIP39 mnemonic phrase"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Mnemonic - 24 Words",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"word_count\": 24,\n  \"language\": \"english\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/mnemonic/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"mnemonic",
+								"generate"
+							]
+						},
+						"description": "Generate a 24-word BIP39 mnemonic phrase for enhanced security"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Mnemonic - Japanese",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"word_count\": 12,\n  \"language\": \"japanese\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/mnemonic/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"mnemonic",
+								"generate"
+							]
+						},
+						"description": "Generate a mnemonic in Japanese"
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Mnemonic",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"language\": \"english\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/mnemonic/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"mnemonic",
+								"validate"
+							]
+						},
+						"description": "Validate a BIP39 mnemonic phrase"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Single Wallet Generation",
+			"item": [
+				{
+					"name": "Single Generate",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"passphrase\": \"\",\n  \"symbol\": \"BTC\",\n  \"index\": 0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/wallet/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallet",
+								"generate"
+							]
+						},
+						"description": "Generate Bitcoin wallets (Legacy, SegWit, and Taproot addresses)"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Ethereum Wallet",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"passphrase\": \"\",\n  \"symbol\": \"ETH\",\n  \"index\": 0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/wallet/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallet",
+								"generate"
+							]
+						},
+						"description": "Generate Ethereum wallet with supported tokens info"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Solana Wallet",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"passphrase\": \"\",\n  \"symbol\": \"SOL\",\n  \"index\": 0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/wallet/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallet",
+								"generate"
+							]
+						},
+						"description": "Generate Solana wallet with SPL token support"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate TRON Wallet",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"passphrase\": \"\",\n  \"symbol\": \"TRX\",\n  \"index\": 0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/wallet/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallet",
+								"generate"
+							]
+						},
+						"description": "Generate TRON wallet with TRC-20 token support"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Wallet with Passphrase",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"passphrase\": \"my-secure-passphrase\",\n  \"symbol\": \"ETH\",\n  \"index\": 0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/wallet/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallet",
+								"generate"
+							]
+						},
+						"description": "Generate wallet with additional passphrase for extra security"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Wallet at Index 5",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"passphrase\": \"\",\n  \"symbol\": \"ETH\",\n  \"index\": 5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/wallet/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallet",
+								"generate"
+							]
+						},
+						"description": "Generate wallet at specific derivation index"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Batch Wallet Generation",
+			"item": [
+				{
+					"name": "Batch Generate",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"passphrase\": \"\",\n  \"symbols\": [\"BTC\", \"ETH\", \"SOL\", \"TRX\", \"XRP\", \"DOGE\", \"ATOM\", \"SUI\", \"NEAR\"],\n  \"start_index\": 0,\n  \"count\": 3\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/wallet/batch",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallet",
+								"batch"
+							]
+						},
+						"description": "Generate wallets for all major supported chains"
+					},
+					"response": []
+				},
+				{
+					"name": "Batch Generate Single Chain Multiple Addresses",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"passphrase\": \"\",\n  \"symbols\": [\"ETH\"],\n  \"start_index\": 0,\n  \"count\": 10\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/wallet/batch",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallet",
+								"batch"
+							]
+						},
+						"description": "Generate 10 Ethereum addresses from the same mnemonic"
+					},
+					"response": []
+				},
+				{
+					"name": "Batch Generate with Start Index",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"passphrase\": \"\",\n  \"symbols\": [\"ETH\", \"SOL\"],\n  \"start_index\": 10,\n  \"count\": 5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/wallet/batch",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallet",
+								"batch"
+							]
+						},
+						"description": "Generate addresses starting from index 10"
+					},
+					"response": []
+				},
+				{
+					"name": "Batch Generate Cosmos Ecosystem",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mnemonic\": \"{{test_mnemonic}}\",\n  \"passphrase\": \"\",\n  \"symbols\": [\"ATOM\", \"OSMO\", \"JUNO\", \"SCRT\", \"AKT\", \"SEI\", \"TIA\", \"INJ\"],\n  \"start_index\": 0,\n  \"count\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/wallet/batch",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"wallet",
+								"batch"
+							]
+						},
+						"description": "Generate wallets for Cosmos ecosystem chains"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "key",
+				"value": "X-API-Key",
+				"type": "string"
+			},
+			{
+				"key": "value",
+				"value": "{{api_key}}",
+				"type": "string"
+			},
+			{
+				"key": "in",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8080",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "a3b1d2f79e8c4a63df0b5e1ca7d4c6b2",
+			"type": "string"
+		},
+		{
+			"key": "test_mnemonic",
+			"value": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+			"type": "string"
+		}
+	]
+}
