@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package wallet.v1;
+
+// Health service
+service HealthService {
+  rpc HealthCheck(HealthRequest) returns (HealthResponse);
+}
+
+// Mnemonic service
+service MnemonicService {
+  rpc GenerateMnemonic(GenerateMnemonicRequest) returns (GenerateMnemonicResponse);
+  rpc ValidateMnemonic(ValidateMnemonicRequest) returns (ValidateMnemonicResponse);
+  rpc GetSupportedLanguages(GetSupportedLanguagesRequest) returns (GetSupportedLanguagesResponse);
+}
+
+// Wallet service
+service WalletService {
+  rpc GenerateWallet(GenerateWalletRequest) returns (GenerateWalletResponse);
+  rpc BatchGenerateWallets(BatchGenerateWalletRequest) returns (BatchGenerateWalletResponse);
+}
+
+// Health messages
+message HealthRequest {}
+
+message HealthResponse {
+  string status = 1;
+  string version = 2;
+  int64 timestamp = 3;
+}
+
+// Mnemonic messages
+message GenerateMnemonicRequest {
+  uint32 word_count = 1;
+  string language = 2;
+}
+
+message GenerateMnemonicResponse {
+  string mnemonic = 1;
+  string language = 2;
+  uint32 word_count = 3;
+  int64 generated_at = 4;
+}
+
+message ValidateMnemonicRequest {
+  string mnemonic = 1;
+  string language = 2;
+}
+
+message ValidateMnemonicResponse {
+  bool valid = 1;
+  optional uint32 word_count = 2;
+  optional string message = 3;
+}
+
+message GetSupportedLanguagesRequest {}
+
+message LanguageInfo {
+  string code = 1;
+  string name = 2;
+  string native_name = 3;
+}
+
+message GetSupportedLanguagesResponse {
+  repeated LanguageInfo languages = 1;
+}
+
+// Wallet messages
+message GenerateWalletRequest {
+  string mnemonic = 1;
+  string passphrase = 2;
+  string symbol = 3;
+  uint32 index = 4;
+}
+
+message TokenInfo {
+  string symbol = 1;
+  string name = 2;
+  optional string contract_address = 3;
+  uint32 decimals = 4;
+  string token_standard = 5;
+  bool is_native = 6;
+}
+
+message GenerateWalletResponse {
+  oneof response {
+    WalletAddressResponse single_wallet = 1;
+    MultipleWalletsResponse multiple_wallets = 2;
+  }
+}
+
+message WalletAddressResponse {
+  string address = 1;
+  string chain_name = 2;
+  string chain_symbol = 3;
+  string address_type = 4;
+  string derivation_path = 5;
+  uint32 index = 6;
+  string public_key = 7;
+  string private_key = 8;
+  repeated TokenInfo supported_tokens = 9;
+}
+
+message MultipleWalletsResponse {
+  repeated WalletAddressResponse wallets = 1;
+}
+
+message BatchGenerateWalletRequest {
+  string mnemonic = 1;
+  string passphrase = 2;
+  repeated string symbols = 3;
+  uint32 start_index = 4;
+  uint32 count = 5;
+}
+
+message BatchGenerateWalletResponse {
+  repeated WalletAddressResponse addresses = 1;
+}

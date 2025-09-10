@@ -11,10 +11,18 @@ mod core;
 mod errors;
 mod services;
 mod middleware;
+mod grpc;
 
 use api::handlers;
 use services::wallet::WalletService;
 use middleware::auth::ApiKeyAuth;
+use grpc::{HealthServiceImpl, MnemonicServiceImpl, WalletServiceImpl};
+use grpc::wallet_proto::{
+    health_service_server::HealthServiceServer,
+    mnemonic_service_server::MnemonicServiceServer,
+    wallet_service_server::WalletServiceServer,
+};
+use tonic::transport::Server;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -35,18 +43,43 @@ async fn main() -> std::io::Result<()> {
     }
     
     let host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
-    let port: u16 = std::env::var("PORT")
+    let http_port: u16 = std::env::var("PORT")
         .unwrap_or_else(|_| "8080".to_string())
         .parse()
         .expect("PORT must be a valid number");
+    let grpc_port: u16 = std::env::var("GRPC_PORT")
+        .unwrap_or_else(|_| "9090".to_string())
+        .parse()
+        .expect("GRPC_PORT must be a valid number");
     
-    info!("Starting Multichain Wallet API on {}:{}", host, port);
+    info!("Starting Multichain Wallet API:");
+    info!("  HTTP server on {}:{}", host, http_port);
+    info!("  gRPC server on {}:{}", host, grpc_port);
     
     // Create shared wallet service
     let wallet_service = Arc::new(Mutex::new(WalletService::new()));
     
-    // Start HTTP server
-    HttpServer::new(move || {
+    // Clone for gRPC services
+    let grpc_wallet_service = wallet_service.clone();
+    
+    // Create gRPC services
+    let health_service = HealthServiceImpl::default();
+    let mnemonic_service = MnemonicServiceImpl::new(grpc_wallet_service.clone());
+    let wallet_service_grpc = WalletServiceImpl::new(grpc_wallet_service);
+    
+    // Prepare gRPC server
+    let grpc_addr = format!("{}:{}", host, grpc_port).parse()
+        .expect("Invalid gRPC address");
+    
+    let grpc_server = Server::builder()
+        .add_service(HealthServiceServer::new(health_service))
+        .add_service(MnemonicServiceServer::new(mnemonic_service))
+        .add_service(WalletServiceServer::new(wallet_service_grpc))
+        .serve(grpc_addr);
+    
+    // Prepare HTTP server
+    let http_addr = (host.clone(), http_port);
+    let http_server = HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
             .allow_any_header()
@@ -68,7 +101,20 @@ async fn main() -> std::io::Result<()> {
                     .service(handlers::batch_generate_wallets)
             )
     })
-    .bind((host, port))?
-    .run()
-    .await
+    .bind(http_addr)?
+    .run();
+    
+    // Run both servers concurrently
+    info!("Both servers starting...");
+    let (http_result, grpc_result) = tokio::join!(http_server, grpc_server);
+    
+    // Check results
+    if let Err(e) = http_result {
+        eprintln!("HTTP server error: {}", e);
+    }
+    if let Err(e) = grpc_result {
+        eprintln!("gRPC server error: {}", e);
+    }
+    
+    Ok(())
 }
