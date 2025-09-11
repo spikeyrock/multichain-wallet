@@ -12,14 +12,19 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy Cargo files
-COPY Cargo.toml Cargo.lock ./
-COPY build.rs ./
+# Copy Cargo.toml and build.rs first for dependency caching
+COPY Cargo.toml build.rs ./
 
-# Copy proto files (needed for build)
+# Copy proto files (needed for build script)
 COPY proto/ proto/
 
-# Copy source code
+# Create a dummy main.rs to build dependencies
+RUN mkdir -p src && echo "fn main() {}" > src/main.rs
+
+# Build dependencies (this layer will be cached)
+RUN cargo build --release && rm -rf src target/release/deps/crypto_wallet_api*
+
+# Copy actual source code
 COPY src/ src/
 
 # Build the application
