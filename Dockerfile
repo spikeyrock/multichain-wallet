@@ -1,5 +1,5 @@
-# Use Rust base image
-FROM rust:1.75-bullseye as builder
+# Use latest Rust base image
+FROM rust:1.80-bullseye as builder
 
 # Install Protocol Buffers compiler
 RUN apt-get update && apt-get install -y \
