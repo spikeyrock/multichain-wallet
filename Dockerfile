@@ -1,5 +1,5 @@
-# Use latest Rust base image
-FROM rust:1.80-bullseye as builder
+# Use latest Rust nightly base image for edition2024 support
+FROM rustlang/rust:nightly-bullseye as builder
 
 # Install Protocol Buffers compiler
 RUN apt-get update && apt-get install -y \
