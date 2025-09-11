@@ -92,11 +92,11 @@ impl MnemonicService for MnemonicServiceImpl {
 
         let response = ValidateMnemonicResponse {
             valid,
-            word_count: if valid { Some(word_count) } else { None },
+            word_count: if valid { word_count } else { 0 },
             message: if valid {
-                Some("Valid mnemonic phrase".to_string())
+                "Valid mnemonic phrase".to_string()
             } else {
-                Some("Invalid mnemonic phrase".to_string())
+                "Invalid mnemonic phrase".to_string()
             },
         };
 

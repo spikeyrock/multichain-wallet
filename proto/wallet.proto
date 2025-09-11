@@ -49,8 +49,8 @@ message ValidateMnemonicRequest {
 
 message ValidateMnemonicResponse {
   bool valid = 1;
-  optional uint32 word_count = 2;
-  optional string message = 3;
+  uint32 word_count = 2;
+  string message = 3;
 }
 
 message GetSupportedLanguagesRequest {}
@@ -76,7 +76,7 @@ message GenerateWalletRequest {
 message TokenInfo {
   string symbol = 1;
   string name = 2;
-  optional string contract_address = 3;
+  string contract_address = 3;
   uint32 decimals = 4;
   string token_standard = 5;
   bool is_native = 6;

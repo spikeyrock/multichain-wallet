@@ -66,7 +66,7 @@ impl WalletServiceImpl {
                     .map(|deployment| TokenInfo {
                         symbol: deployment.symbol.clone(),
                         name: token.name.clone(),
-                        contract_address: deployment.contract_address.clone(),
+                        contract_address: deployment.contract_address.clone().unwrap_or_default(),
                         decimals: deployment.decimals as u32,
                         token_standard: deployment.token_standard.clone(),
                         is_native: deployment.is_native,
